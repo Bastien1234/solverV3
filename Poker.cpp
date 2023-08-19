@@ -923,15 +923,14 @@ void PokerNode::buildChanceNode()
     } else {
         player = 0;
     }
-
-
+    
     bool hasTurnIndex = false;
     vector<int> turnIndexes;
 
     if (this->stage == 0) {
         for (int index = 0; index<this->limitedRunouts.size(); index ++)
         {
-            auto card = limitedRunouts[0][index];
+            auto card = limitedRunouts[index][0];
             if (find(this->board.begin(), this->board.end(), card) == this->board.end()) {
                 validCards.push_back(card);
                 turnIndexes.push_back(index);
@@ -942,6 +941,7 @@ void PokerNode::buildChanceNode()
         auto card = this->limitedRunouts[this->turnIndex][1];
         validCards.push_back(card);
     }
+
 
     for (int index = 0; index<validCards.size(); index++)
     {
@@ -975,9 +975,12 @@ void PokerNode::buildChanceNode()
     }
 
 
+
     int nbActions = this->children.size();
     this->RegretSum = filledArrayDouble(nbActions, 0.0);
     this->StrategySum = filledArrayDouble(nbActions, 0.0);
     this->Strategy = filledArrayDouble(nbActions, (1.0 / (float)nbActions));
     this->probabilities = uniformDist(this->children.size());
+
+
 }
