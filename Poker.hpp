@@ -104,10 +104,7 @@ private:
     vector<double> probabilities;
 
 
-    int raiseLevel;
-    vector<string> board;
 
-    int stage;
 
     vector<vector<string>> limitedRunouts; // FIX ME: Kick that shit out to constants variables plz
     int turnIndex;
@@ -118,6 +115,9 @@ public:
     int potSize;
     int effectiveSize;
     int currentFacingBet;
+    int raiseLevel;
+    int stage;
+    vector<string> board;
     Hand p0Card;
     Hand p1Card;
     vector<double> RegretSum;
@@ -128,15 +128,16 @@ public:
     string history;
     PokerNode(
         int _player,
-        int _currentFacingBet,
+        vector<vector<string>> _limitedRunouts,
         int _potSize,
-        vector<string> _board,
+        int _effectiveSize,
+        int _currentFacingBet,
         int _raiseLevel,
         int _stage,
-        string _history,
+        vector<string> _board,
         Hand _p0Card,
         Hand _p1Card,
-        vector<vector<string>> _limitedRunouts
+        string _history
     );
     ~PokerNode();
     int getPlayer();

@@ -1,0 +1,7 @@
+go version:
+    169s
+
+C++ (no update tree):
+    no tag : 164s
+    -O3 : 24s
+    -Ofast: 27s

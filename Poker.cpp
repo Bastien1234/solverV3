@@ -14,6 +14,8 @@
 #include "Deck.hpp"
 #include "NodeStrategy.hpp"
 
+#include "backward.hpp"
+
 using namespace std;
 
 unordered_map<string, long> memoMap;
@@ -71,26 +73,28 @@ vector<vector<string>> getLimitedRunouts(int nbRunouts)
 
 PokerNode::PokerNode(
         int _player,
+        vector<vector<string>> _limitedRunouts,
         int _potSize,
+        int _effectiveSize,
         int _currentFacingBet,
-        vector<string> _board,
         int _raiseLevel,
         int _stage,
-        string _history,
+        vector<string> _board,
         Hand _p0Card,
         Hand _p1Card,
-        vector<vector<string>> _limitedRunouts)
+        string _history)
         : 
         player(_player),
+        limitedRunouts(_limitedRunouts),
         potSize(_potSize),
+        effectiveSize(_effectiveSize),
         currentFacingBet(_currentFacingBet),
-        board(_board),
         raiseLevel(_raiseLevel),
         stage(_stage),
-        history(_history),
+        board(_board),
         p0Card(_p0Card),
         p1Card(_p1Card),
-        limitedRunouts(_limitedRunouts)
+        history(_history)
 {
     this->turnIndex = -1;
 };
@@ -148,8 +152,6 @@ char PokerNode::type()
 
 bool PokerNode::isTerminal()
 {
-    printf("Fonction is terminal\n");
-    printf("Node history : %s\n", this->history.c_str());
 
     if (this->history.size() == 0)
     {
@@ -159,11 +161,9 @@ bool PokerNode::isTerminal()
     int lastElementIndex = this->history.size() -1;
 
     string lastAction = this->history.substr(lastElementIndex);
-    printf("Last action : %s\n", lastAction.c_str());
     
     if (lastAction == h_Fold)
     {
-        printf("Return true\n");
         return true;
     }
 
@@ -172,18 +172,15 @@ bool PokerNode::isTerminal()
         char areWeAllIn = this->history[this->history.size() - 2];
         if (areWeAllIn == 'a')
         {
-            printf("Return true because all in\n");
             return true;
         }
     }
 
     if (this->stage == 2 && (lastAction == h_CheckBack || lastAction == h_Call))
     {
-        printf("Return true because close action\n");
         return true;
     }
     
-    printf("return false\n");
     return false;
 }
 
@@ -234,18 +231,13 @@ vector<string> getFullBoard(vector<string> currentBoard, array<string, 2> player
 
 double PokerNode::utility(int player)
 {
-    printf("Start utility\n");
     Hand cardPlayer = this->playerCard(player);
     Hand cardOpponent = this->playerCard(1 - player);
 
-    printf("Card player : %s %s\n", cardPlayer.Cards.at(0).c_str(), cardPlayer.Cards.at(1).c_str());
-    printf("Card opponent : %s %s\n", cardOpponent.Cards.at(0).c_str(), cardOpponent.Cards.at(1).c_str());
 
     bool isShowdown;
 
-    printf("oui\n");
     string lastAction = this->history.substr(this->history.size() -1);
-    printf("non\n");
 
     if (lastAction == h_Fold)
     {
@@ -255,7 +247,6 @@ double PokerNode::utility(int player)
     }
 
     if (isShowdown == false) {
-        printf("Return whithout showdown\n");
 
         // FIX ME
 			// return -float64(n.PotSize) * opponent or hero card frequency
@@ -269,25 +260,20 @@ double PokerNode::utility(int player)
 
     // Case river showdown
     if (this->stage == 2) {
-        printf("oui le showdown\n");
 
         vector<string> playerFinalHand = board;
         playerFinalHand.push_back(cardPlayer.Cards.at(0));
         playerFinalHand.push_back(cardPlayer.Cards.at(1));
-        printf("oui 1\n");
 
 
         vector<string> opponentFinalhand = board;
         opponentFinalhand.push_back(cardOpponent.Cards.at(0));
         opponentFinalhand.push_back(cardOpponent.Cards.at(1));
-        printf("Player final hand\n");
 
         long playerHandValue = handsolver.solve(playerFinalHand);
         long opponentHandValue = handsolver.solve(opponentFinalhand);
-        printf("oui 3\n");
 
 
-        printf("Return at showdown\n");
 
         if (playerHandValue > opponentHandValue) {
             return (double)this->potSize;
@@ -330,7 +316,6 @@ double PokerNode::utility(int player)
 
     averagePlayerWinnings = cumulativePlayerWinnings / (double)AllInSamplesize;
 
-    printf("Return after sampling\n");
 
     return averagePlayerWinnings;
 }
@@ -358,7 +343,7 @@ vector<double> filledArrayDouble(int nbActions, double value)
 
 void PokerNode::instanciate()
 {
-    //
+    // FIX ME: What did I want to do ??? LOL
 }
 
 // OOOH MYYYYY GAAAAAAD
@@ -371,52 +356,39 @@ void PokerNode::buildChildren()
     auto previousAction = this->history.substr(this->history.size() -1);
 
     if (previousAction == h_RootNode) {
-        printf("build root deals\n");
         this->buildRootDeals();
     } else if (previousAction == h_P0Deal) {
-        printf("build p1 deals\n");
         this->buildP1Deal();
     } else if (previousAction == h_P1Deal) {
-        printf("build open action deals\n");
         this->buildOpenAction();
     } else if (previousAction == h_Chance) {
-        printf("build p0 deals\n");
         this->buildP0Deal();
     } else if (previousAction == h_Check) {
-        printf("build cb action\n");
         this->buildCBAction();
     } else if (previousAction == h_Bet1) {
-        printf("build fcr deals\n");
         this->buildCFRAction(true);
     } else if (previousAction == h_Bet2) {
-        printf("build fcr deals\n");
 
         this->buildCFRAction(true);
     } else if (previousAction == h_Bet3) {
-        printf("build fcr deals\n");
 
         this->buildCFRAction(true);
     } else if (previousAction == h_Raise1) {
-        printf("build fcr deals\n");
 
         this->buildCFRAction(true);
     } else if (previousAction == h_Raise2) {
-        printf("build fcr deals\n");
 
         this->buildCFRAction(true);
     } else if (previousAction == h_AllIn) {
-        printf("build fcr deals\n");
 
         this->buildCFRAction(false);
     } else if (previousAction == h_CheckBack) {
         if (this->stage == 0 || this->stage == 1) {
-        printf("build chance no after check back\n");
    
         this->buildChanceNode();
         } else { return; }
     } else if (previousAction == h_Call) {
         if (this->stage == 0 || this->stage == 1) {
-        printf("build chance node after check\n");
 
         this->buildChanceNode();
         } else { return; }
@@ -440,15 +412,16 @@ void PokerNode::buildChildren()
 void PokerNode::buildRootDeals() {
     PokerNode *child = new PokerNode(
         -1, 
-        this->potSize, 
+        this->limitedRunouts,
+        this->potSize,
+        this->effectiveSize, 
         this->currentFacingBet,
-        this->board, 
         this->raiseLevel,
         this->stage,
-        h_P0Deal,
+        this->board,
         this->p0Card,
         this->p1Card,
-        this->limitedRunouts
+        h_P0Deal
     );
 
     this->children.push_back(child);
@@ -462,16 +435,17 @@ void PokerNode::buildRootDeals() {
 void PokerNode::buildP0Deal() {
     PokerNode *child = new PokerNode(
         -1, 
+        this->limitedRunouts,
         this->potSize, 
+        this->effectiveSize,
         this->currentFacingBet,
-        this->board, 
         this->raiseLevel,
         this->stage,
-        this->history + h_P0Deal,
+        this->board, 
         this->p0Card,
         this->p1Card,
-        this->limitedRunouts
-    );
+        this->history + h_P0Deal
+        );
     child->parent = this;
     child->turnIndex = this->turnIndex;
 
@@ -486,15 +460,16 @@ void PokerNode::buildP0Deal() {
 void PokerNode::buildP1Deal() {
     PokerNode *child = new PokerNode(
         0, 
-        this->potSize, 
+        this->limitedRunouts,
+        this->potSize,
+        this->effectiveSize, 
         this->currentFacingBet,
-        this->board, 
         this->raiseLevel,
         this->stage,
-        this->history + h_P1Deal,
+        this->board, 
         this->p0Card,
         this->p1Card,
-        this->limitedRunouts
+        this->history + h_P1Deal
     );
     child->parent = this;
     child->turnIndex = this->turnIndex;
@@ -576,15 +551,16 @@ void PokerNode::buildOpenAction() {
 
         PokerNode *child = new PokerNode(
             1, 
-            this->potSize + (int)addToPotSize, 
+            this->limitedRunouts,
+            this->potSize + (int)addToPotSize,
+            this->effectiveSize - (int)addToPotSize, 
             this->currentFacingBet + (int)addToPotSize,
-            this->board, 
             this->raiseLevel,
             this->stage,
-            this->history + choices[i],
+            this->board, 
             this->p0Card,
             this->p1Card,
-            this->limitedRunouts
+            this->history + choices[i]
         );
         child->parent = this;
         child->turnIndex = this->turnIndex;
@@ -668,15 +644,16 @@ void PokerNode::buildCBAction() {
 
         PokerNode *child = new PokerNode(
             0, 
-            this->potSize + (int)addToPotSize, 
+            this->limitedRunouts,
+            this->potSize + (int)addToPotSize,
+            this->effectiveSize - (int)addToPotSize,
             this->currentFacingBet + (int)addToPotSize,
-            this->board, 
             this->raiseLevel,
             this->stage,
-            this->history + choices[i],
+            this->board, 
             this->p0Card,
             this->p1Card,
-            this->limitedRunouts
+            this->history + choices[i]
         );
         child->parent = this;
         child->turnIndex = this->turnIndex;
@@ -911,15 +888,16 @@ void PokerNode::buildCFRAction(bool isRaise)
 
         PokerNode *child = new PokerNode(
             player, 
+            this->limitedRunouts,
             this->potSize + (int)addToPotSize, 
+            this->effectiveSize - (int)addToPotSize,
             this->currentFacingBet + addToPotSize,
-            this->board, 
             this->raiseLevel,
             this->stage,
-            this->history + choices[index],
+            this->board, 
             this->p0Card,
             this->p1Card,
-            this->limitedRunouts
+            this->history + choices[index]
         );
         child->parent = this;
         child->turnIndex = this->turnIndex;
@@ -979,15 +957,16 @@ void PokerNode::buildChanceNode()
 
         PokerNode *child = new PokerNode(
             this->player, 
-            this->potSize, 
-            0,
-            board, 
+            this->limitedRunouts,
+            this->potSize,
+            this->effectiveSize,
+            this->currentFacingBet, 
             this->raiseLevel,
             newNodeStage,
-            this->history + "*" + validCards[index] + "*" + h_Chance,
+            board, 
             this->p0Card,
             this->p1Card,
-            this->limitedRunouts
+            this->history + "*" + validCards[index] + "*" + h_Chance
         );
         child->parent = this;
         child->turnIndex = finalTurnIndex;

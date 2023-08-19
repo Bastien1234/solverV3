@@ -10,6 +10,8 @@
 #include "Range.hpp"
 #include "Cfr.hpp"
 
+#include "backward.hpp"
+
 
 using namespace std;
 using namespace std::chrono;
@@ -38,7 +40,7 @@ int main()
 
     double expectedValue = 0.0;
 
-    PokerNode *root = new PokerNode(-1, 0, Pot, board, 0, 0, h_RootNode, handsOOP[0], handsIP[0], lro);
+    PokerNode *root = new PokerNode(-1, lro, Pot, EffectiveStack, 0, 0, 0, board, handsOOP[0], handsIP[0], h_RootNode);
         // Have to take this outside this with a pre root of something...
 
     for (int i = 0; i<N_ITERATIONS; i++)
@@ -78,7 +80,9 @@ int main()
         root->p0Card = validHandOOP;
         root->p1Card = validHandIP;
 
-            cfr.run(root);
+        // printf("Check root node\neffecitve size : %d, pot size : %d\n", root->effectiveSize, root->potSize);
+
+        cfr.run(root);
         // try {
         //     printf("Root cards\n p0 : %s %s\np1 : %s %s\n", root->p0Card.Cards.at(0).c_str(), root->p0Card.Cards.at(1).c_str(), root->p1Card.Cards.at(0).c_str(), root->p1Card.Cards.at(0).c_str());
         // }
