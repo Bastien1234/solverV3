@@ -23,18 +23,18 @@ const int MaxChanceNodes = 1500;
 static const vector<string> board = {"Ah", "7d", "5h"};
 
 // Strategies
-const vector<double> OOPFlopBets = {0.25, 0.75};
+const vector<double> OOPFlopBets = {0.4};
 const vector<double> IPFlopBets = {0.25, 0.75, 1.2};
 const vector<double> OOPFlopRaises = {3};
 const vector<double> IPFlopRaises = {3};
 
-const vector<double> OOPTurnBets = {0.75, 1.2};
+const vector<double> OOPTurnBets = {0.8};
 const vector<double> IPTurnBets = {0.75, 1.2};
 const vector<double> OOPTurnRaises = {3};
 const vector<double> IPTurnRaises = {3};
 
-const vector<double> OOPRiverBets = {0.75, 1.2};
-const vector<double> IPRiverBets = {0.75, 1.2};
+const vector<double> OOPRiverBets = {0.75};
+const vector<double> IPRiverBets = {0.75};
 const vector<double> OOPRiverRaises = {3};
 const vector<double> IPRiverRaises = {3};
 

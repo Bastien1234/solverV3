@@ -14,11 +14,13 @@
 
 #include "backward.hpp"
 
+// #include <nlohmann/json.hpp>
 
+// using json = nlohmann::json;
 using namespace std;
 using namespace std::chrono;
 
-const int N_ITERATIONS = 10000;
+const int N_ITERATIONS = 1000;
 
 int main()
 {
@@ -125,21 +127,20 @@ int main()
         {
             queue.push(child);
         }
-
-        if (node->history.substr(node->history.size() -1) != h_Chance || node->history.substr(node->history.size() -1) != h_P0Deal || node->history.substr(node->history.size() -1) != h_P1Deal)
+        
+        myFile << "History : " << node->history << endl;
+        for (int i=0; i<node->Strategy.size(); i++)
         {
-            myFile << node->history << endl;
-            for (int i=0; i<node->Strategy.size(); i++)
-            {
-                myFile << node->Strategy[i] << endl;
-            }
+            myFile << "    " << node->Strategy[i] << endl;
         }
+        
+    }
 
 /*
         total_results ++;
         if (total_results >= MAX_RESULTS) { break; };
 */
-    }
+    
 
     cfr.DeleteTree(root);
     
