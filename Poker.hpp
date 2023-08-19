@@ -100,7 +100,6 @@ class PokerNode
 private:
     PokerNode *parent;
     int player;
-    vector<PokerNode*> children;
     vector<double> probabilities;
 
 
@@ -126,6 +125,7 @@ public:
     double ReachPr;
     double ReachPrSum;
     string history;
+    vector<PokerNode*> children;
     PokerNode(
         int _player,
         vector<vector<string>> _limitedRunouts,

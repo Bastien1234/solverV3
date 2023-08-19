@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdlib>
 #include <stdio.h>
+#include <queue>
 
 #include "Poker.hpp"
 #include "Hand.hpp"
@@ -136,10 +137,74 @@ double CFR::handlePlayerNode(PokerNode *node, int lastPlayer, double reachP0, do
 
 void CFR::UpdateTree(PokerNode *root) 
 {
-    // ...
+    auto node = root;
+    queue<PokerNode*> queue;
+
+    queue.push(node);
+
+    while(queue.size() > 0)
+    {
+        node = queue.front();
+        queue.pop();
+
+        for (auto child : node->children)
+        {
+            queue.push(child);
+        }
+
+        // Update strategy
+        for (int i=0; i<node->StrategySum.size(); i++)
+        {
+            node->StrategySum[i] = node->ReachPr * node->Strategy[i];
+        }
+
+        node->ReachPrSum += node->ReachPr;
+
+        // Get Strategy
+        double normalizingSum = 0.0;
+        vector<double> regrets;
+
+        for (int i=0; i<node->RegretSum.size(); i++)
+        {
+            regrets.push_back(node->RegretSum[i]);
+            normalizingSum += node->RegretSum[i];
+        }
+
+        for (int index=0; index<regrets.size(); index++)
+        {
+            if (normalizingSum > 0) {
+                regrets[index] = regrets[index] / normalizingSum;
+            } else {
+                regrets[index] = 1.0 / double(regrets.size());
+            }
+        }
+
+        node->Strategy = regrets;
+
+        node->ReachPr = 0.0;
+
+
+    }
 }
+
 void CFR::DeleteTree(PokerNode *root)
 {
-    // ...
+    auto node = root;
+    queue<PokerNode*> queue;
+
+    queue.push(node);
+
+    while(queue.size() > 0)
+    {
+        node = queue.front();
+        queue.pop();
+
+        for (auto child : node->children)
+        {
+            queue.push(child);
+        }
+
+        free(node);
+    }
 }
 

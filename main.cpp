@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <random>
 #include <stdio.h>
+#include <queue>
+#include <fstream>
 
 #include "Deck.hpp"
 #include "Handsolver.hpp"
@@ -16,7 +18,7 @@
 using namespace std;
 using namespace std::chrono;
 
-const int N_ITERATIONS = 100;
+const int N_ITERATIONS = 10000;
 
 int main()
 {
@@ -83,17 +85,8 @@ int main()
         // printf("Check root node\neffecitve size : %d, pot size : %d\n", root->effectiveSize, root->potSize);
 
         cfr.run(root);
-        // try {
-        //     printf("Root cards\n p0 : %s %s\np1 : %s %s\n", root->p0Card.Cards.at(0).c_str(), root->p0Card.Cards.at(1).c_str(), root->p1Card.Cards.at(0).c_str(), root->p1Card.Cards.at(0).c_str());
-        // }
-        // catch(const std::exception& e) {
-        //     cout << e.what() << endl;
-        //     cout << "Exit because error" << endl;
-        //     break;
-        // }
 
-        // Update Tree now
-
+        cfr.UpdateTree(root);
 
     }
 
@@ -111,6 +104,44 @@ int main()
     auto duration = duration_cast<seconds>(stop - start);
     cout << duration.count() << endl;
 
+    printf("Saving results\n");
+    int MAX_RESULTS = 100;
+    int total_results = 0;
+
+    auto node = root;
+    queue<PokerNode*> queue;
+
+    queue.push(node);
+
+    ofstream myFile;
+    myFile.open("logs.txt");
+
+    while(queue.size() > 0)
+    {
+        node = queue.front();
+        queue.pop();
+
+        for (auto child : node->children)
+        {
+            queue.push(child);
+        }
+
+        if (node->history.substr(node->history.size() -1) != h_Chance || node->history.substr(node->history.size() -1) != h_P0Deal || node->history.substr(node->history.size() -1) != h_P1Deal)
+        {
+            myFile << node->history << endl;
+            for (int i=0; i<node->Strategy.size(); i++)
+            {
+                myFile << node->Strategy[i] << endl;
+            }
+        }
+
+/*
+        total_results ++;
+        if (total_results >= MAX_RESULTS) { break; };
+*/
+    }
+
+    cfr.DeleteTree(root);
     
 
     return 0;
