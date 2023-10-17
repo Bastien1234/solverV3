@@ -1,0 +1,4 @@
+Hero hand : AdKd
+Hero position : IP
+History: R
+    1
