@@ -151,14 +151,24 @@ public:
     Hand playerCard(int player);
     void instanciate();
 
-    void buildChildren();
-    void buildRootDeals();
-    void buildP0Deal();
-    void buildP1Deal();
-    void buildOpenAction();
-    void buildCBAction();
-    void buildCFRAction(bool isRaise);
-    void buildChanceNode();
+    std::vector<PokerNode> buildChildren(MasterMap* masterMap);
+    std::vector<PokerNode> buildRootDeals();
+    std::vector<PokerNode> buildP0Deal();
+    std::vector<PokerNode> buildP1Deal();
+    std::vector<PokerNode> buildOpenAction();
+    std::vector<PokerNode> buildCBAction();
+    std::vector<PokerNode> buildCFRAction(bool isRaise);
+    std::vector<PokerNode> buildChanceNode();
+};
+
+class MasterMap
+{
+public:
+    MasterMap();
+    ~MasterMap();
+
+    std::unordered_map<string, PokerNode*> map;
+    void add(std::vector<PokerNode> children);
 };
 
 // Utils functions

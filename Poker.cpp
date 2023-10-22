@@ -347,7 +347,7 @@ void PokerNode::instanciate()
 }
 
 // OOOH MYYYYY GAAAAAAD
-void PokerNode::buildChildren()
+std::vector<PokerNode> PokerNode::buildChildren(MasterMap* masterMap)
 {
     if (this->isTerminal()) {
         return;
@@ -356,7 +356,8 @@ void PokerNode::buildChildren()
     auto previousAction = this->history.substr(this->history.size() -1);
 
     if (previousAction == h_RootNode) {
-        this->buildRootDeals();
+        auto children = buildRootDeals();
+        masterMap->add(children);
     } else if (previousAction == h_P0Deal) {
         this->buildP1Deal();
     } else if (previousAction == h_P1Deal) {
@@ -409,7 +410,7 @@ void PokerNode::buildChildren()
     // HEY! No Fking map in this program okaaaaaay !!!
 }
 
-void PokerNode::buildRootDeals() {
+std::vector<PokerNode> PokerNode::buildRootDeals() {
     PokerNode *child = new PokerNode(
         -1, 
         this->limitedRunouts,
@@ -432,7 +433,7 @@ void PokerNode::buildRootDeals() {
     this->probabilities = uniformDist(this->children.size());
 }
 
-void PokerNode::buildP0Deal() {
+std::vector<PokerNode> PokerNode::buildP0Deal() {
     PokerNode *child = new PokerNode(
         -1, 
         this->limitedRunouts,
@@ -457,7 +458,7 @@ void PokerNode::buildP0Deal() {
     this->probabilities = uniformDist(this->children.size());
 }
 
-void PokerNode::buildP1Deal() {
+std::vector<PokerNode> PokerNode::buildP1Deal() {
     PokerNode *child = new PokerNode(
         0, 
         this->limitedRunouts,
@@ -575,7 +576,7 @@ void PokerNode::buildOpenAction() {
     this->probabilities = uniformDist(this->children.size());
 }
 
-void PokerNode::buildCBAction() {
+std::vector<PokerNode> PokerNode::buildCBAction() {
 
     vector<string> choices = { h_CheckBack };
     vector<double> bets = { 0.0 };
@@ -679,7 +680,7 @@ bool isOverThreasholdRaise(const PokerNode *parent, double choice)
     return potentialRaise + (double)parent->effectiveSize >= (double)parent->effectiveSize*Threashold;
 }
 
-void PokerNode::buildCFRAction(bool isRaise)
+std::vector<PokerNode> PokerNode::buildCFRAction(bool isRaise)
 {
     vector<string> choices = { h_Fold, h_Call };
     vector<double> bets = { 0.0, 0.0 };
@@ -913,7 +914,7 @@ void PokerNode::buildCFRAction(bool isRaise)
     this->probabilities = uniformDist(this->children.size());
 }
 
-void PokerNode::buildChanceNode()
+std::vector<PokerNode> PokerNode::buildChanceNode()
 {
     vector<string> validCards;
     int player;
@@ -983,4 +984,25 @@ void PokerNode::buildChanceNode()
     this->probabilities = uniformDist(this->children.size());
 
 
+}
+
+MasterMap::MasterMap()
+{
+    // Pre allocate some size ?
+}
+
+MasterMap::~MasterMap()
+{
+    for (auto n : this->map)
+    {
+        delete(n.second);
+    }
+}
+
+void MasterMap::add(std::vector<PokerNode> children)
+{
+    for (auto child : children)
+    {
+        this->map[child.history] = 
+    }
 }

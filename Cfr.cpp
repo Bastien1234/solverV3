@@ -19,7 +19,14 @@ double getSign(int player0, int player1) {
 }
 
 CFR::CFR() {};
-CFR::~CFR() {};
+CFR::~CFR() 
+{
+    for (auto kv : this->cfr_map)
+    {
+        auto node = kv.second;
+        delete(node);
+    }
+};
 
 double CFR::run(PokerNode *node)
 {
@@ -135,22 +142,12 @@ double CFR::handlePlayerNode(PokerNode *node, int lastPlayer, double reachP0, do
     return util;
 }
 
-void CFR::UpdateTree(PokerNode *root) 
+void CFR::UpdateTree() 
 {
-    auto node = root;
-    queue<PokerNode*> queue;
 
-    queue.push(node);
-
-    while(queue.size() > 0)
+    for (auto kv : this->cfr_map)
     {
-        node = queue.front();
-        queue.pop();
-
-        for (auto child : node->children)
-        {
-            queue.push(child);
-        }
+        auto node = kv.second;
 
         // Update strategy
         for (int i=0; i<node->StrategySum.size(); i++)
@@ -182,29 +179,5 @@ void CFR::UpdateTree(PokerNode *root)
         node->Strategy = regrets;
 
         node->ReachPr = 0.0;
-
-
     }
-}
-
-void CFR::DeleteTree(PokerNode *root)
-{
-    auto node = root;
-    queue<PokerNode*> queue;
-
-    queue.push(node);
-
-    while(queue.size() > 0)
-    {
-        node = queue.front();
-        queue.pop();
-
-        for (auto child : node->children)
-        {
-            queue.push(child);
-        }
-
-        free(node);
-    }
-}
-
+};

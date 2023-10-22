@@ -84,11 +84,12 @@ int main()
         root->p0Card = validHandOOP;
         root->p1Card = validHandIP;
 
+
         // printf("Check root node\neffecitve size : %d, pot size : %d\n", root->effectiveSize, root->potSize);
 
         cfr.run(root);
 
-        cfr.UpdateTree(root);
+        cfr.UpdateTree();
 
     }
 
@@ -142,7 +143,6 @@ int main()
 */
     
 
-    cfr.DeleteTree(root);
     
 
     return 0;
