@@ -98,6 +98,7 @@ vector<vector<string>> getLimitedRunouts(int nbRunouts);
 class PokerNode
 {
 private:
+public:
     PokerNode *parent;
     int player;
     vector<double> probabilities;
@@ -110,7 +111,6 @@ private:
 
 
     short int Visited;
-public:
     int potSize;
     int effectiveSize;
     int currentFacingBet;
@@ -126,6 +126,7 @@ public:
     double ReachPrSum;
     string history;
     vector<PokerNode*> children;
+    vector<string> childrenHistory;
     PokerNode(
         int _player,
         vector<vector<string>> _limitedRunouts,
@@ -152,13 +153,13 @@ public:
     void instanciate();
 
     std::vector<PokerNode> buildChildren(MasterMap* masterMap);
-    std::vector<PokerNode> buildRootDeals();
-    std::vector<PokerNode> buildP0Deal();
-    std::vector<PokerNode> buildP1Deal();
-    std::vector<PokerNode> buildOpenAction();
-    std::vector<PokerNode> buildCBAction();
-    std::vector<PokerNode> buildCFRAction(bool isRaise);
-    std::vector<PokerNode> buildChanceNode();
+    std::vector<PokerNode> buildRootDeals(MasterMap* masterMap);
+    std::vector<PokerNode> buildP0Deal(MasterMap* masterMap);
+    std::vector<PokerNode> buildP1Deal(MasterMap* masterMap);
+    std::vector<PokerNode> buildOpenAction(MasterMap* masterMap);
+    std::vector<PokerNode> buildCBAction(MasterMap* masterMap);
+    std::vector<PokerNode> buildCFRAction(MasterMap* masterMap, bool isRaise);
+    std::vector<PokerNode> buildChanceNode(MasterMap* masterMap);
 };
 
 class MasterMap

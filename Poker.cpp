@@ -101,6 +101,7 @@ PokerNode::PokerNode(
 
 PokerNode::~PokerNode(){};
 
+
 int PokerNode::getPlayer()
 {
     return this->player;
@@ -356,42 +357,41 @@ std::vector<PokerNode> PokerNode::buildChildren(MasterMap* masterMap)
     auto previousAction = this->history.substr(this->history.size() -1);
 
     if (previousAction == h_RootNode) {
-        auto children = buildRootDeals();
-        masterMap->add(children);
+        return this->buildRootDeals(masterMap);
     } else if (previousAction == h_P0Deal) {
-        this->buildP1Deal();
+        return this->buildP1Deal(masterMap);
     } else if (previousAction == h_P1Deal) {
-        this->buildOpenAction();
+        return this->buildOpenAction(masterMap);
     } else if (previousAction == h_Chance) {
-        this->buildP0Deal();
+        return this->buildP0Deal(masterMap);
     } else if (previousAction == h_Check) {
-        this->buildCBAction();
+        return this->buildCBAction(masterMap);
     } else if (previousAction == h_Bet1) {
-        this->buildCFRAction(true);
+        return this->buildCFRAction(masterMap, true);
     } else if (previousAction == h_Bet2) {
 
-        this->buildCFRAction(true);
+        return this->buildCFRAction(masterMap, true);
     } else if (previousAction == h_Bet3) {
 
-        this->buildCFRAction(true);
+        return this->buildCFRAction(masterMap, true);
     } else if (previousAction == h_Raise1) {
 
-        this->buildCFRAction(true);
+        return this->buildCFRAction(masterMap, true);
     } else if (previousAction == h_Raise2) {
 
-        this->buildCFRAction(true);
+        return this->buildCFRAction(masterMap, true);
     } else if (previousAction == h_AllIn) {
 
-        this->buildCFRAction(false);
+        return this->buildCFRAction(masterMap, false);
     } else if (previousAction == h_CheckBack) {
         if (this->stage == 0 || this->stage == 1) {
    
-        this->buildChanceNode();
+            return this->buildChanceNode(masterMap);
         } else { return; }
     } else if (previousAction == h_Call) {
         if (this->stage == 0 || this->stage == 1) {
 
-        this->buildChanceNode();
+            return this->buildChanceNode(masterMap);
         } else { return; }
     }
 
@@ -410,8 +410,8 @@ std::vector<PokerNode> PokerNode::buildChildren(MasterMap* masterMap)
     // HEY! No Fking map in this program okaaaaaay !!!
 }
 
-std::vector<PokerNode> PokerNode::buildRootDeals() {
-    PokerNode *child = new PokerNode(
+std::vector<PokerNode> PokerNode::buildRootDeals(MasterMap* masterMap) {
+    PokerNode child = PokerNode(
         -1, 
         this->limitedRunouts,
         this->potSize,
@@ -425,12 +425,16 @@ std::vector<PokerNode> PokerNode::buildRootDeals() {
         h_P0Deal
     );
 
+// CODE children history instead of children
     this->children.push_back(child);
+    this->childrenHistory.push_back("FIX MEEEEEEEE")
     int nbActions = this->children.size();
     this->RegretSum = filledArrayDouble(nbActions, 0.0);
     this->StrategySum = filledArrayDouble(nbActions, 0.0);
     this->Strategy = filledArrayDouble(nbActions, (1.0 / (float)nbActions));
     this->probabilities = uniformDist(this->children.size());
+
+    masterMap->add(std::vector<PokerNode>{child});
 }
 
 std::vector<PokerNode> PokerNode::buildP0Deal() {
@@ -1003,6 +1007,19 @@ void MasterMap::add(std::vector<PokerNode> children)
 {
     for (auto child : children)
     {
-        this->map[child.history] = 
-    }
+        PokerNode *heapNode = new PokerNode(
+            child.player, 
+            child.limitedRunouts,
+            child.potSize,
+            child.effectiveSize,
+            child.currentFacingBet, 
+            child.raiseLevel,
+            child.stage,
+            child.board, 
+            child.p0Card,
+            child.p1Card,
+            child.history
+        );
+        this->map.at(child.history) = heapNode;
+    };
 }
