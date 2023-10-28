@@ -9,3 +9,5 @@
 [] return from map when get child and not build it again
 
 [] cfr update tree to masternode update tree
+
+[] when storing child, pass frequencies !!!

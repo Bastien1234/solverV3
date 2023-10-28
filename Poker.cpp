@@ -1048,6 +1048,8 @@ void MasterMap::add(std::vector<PokerNode> children)
 {
     for (auto child : children)
     {
+        int currentPlayer = child.getPlayer();
+        
         PokerNode *heapNode = new PokerNode(
             child.player, 
             child.limitedRunouts,
