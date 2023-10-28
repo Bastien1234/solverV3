@@ -142,8 +142,8 @@ public:
     );
     ~PokerNode();
     int getPlayer();
-    int numChildren();
-    PokerNode *getChild(int i);
+    int numChildren(MasterMap* masterMap);
+    PokerNode *getChild(int i, MasterMap* masterMap);
     PokerNode *getParent();
     double getChildProbability(int i);
     char type();

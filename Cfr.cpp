@@ -20,25 +20,19 @@ double getSign(int player0, int player1) {
 
 CFR::CFR() {};
 CFR::~CFR() 
-{
-    for (auto kv : this->cfr_map)
-    {
-        auto node = kv.second;
-        delete(node);
-    }
-};
+{};
 
-double CFR::run(PokerNode *node)
+double CFR::run(PokerNode node, MasterMap *masterMap)
 {
-    return this->runHelper(node, node->getPlayer(), 1.0, 1.0, 1.0);
+    return this->runHelper(node, node.getPlayer(), 1.0, 1.0, 1.0, masterMap);
 }
 
-double CFR::runHelper(PokerNode *node, int lastPlayer, double reachP0, double reachP1, double reachChance)
+double CFR::runHelper(PokerNode node, int lastPlayer, double reachP0, double reachP1, double reachChance, MasterMap *masterMap)
 {
     double ev;
-    switch (node->type()) {
+    switch (node.type()) {
         case 't':
-            ev = node->utility(lastPlayer);
+            ev = node.utility(lastPlayer);
         break;
 
         case 'c':
@@ -48,7 +42,7 @@ double CFR::runHelper(PokerNode *node, int lastPlayer, double reachP0, double re
 
         case 'p':
 
-            auto sgn = getSign(lastPlayer, node->getPlayer());
+            auto sgn = getSign(lastPlayer, node.getPlayer());
             ev = sgn * this->handlePlayerNode(node, lastPlayer, reachP0, reachP1, reachChance);
             break;
     }
@@ -56,7 +50,7 @@ double CFR::runHelper(PokerNode *node, int lastPlayer, double reachP0, double re
     return ev;
 }
 
-double CFR::handleChanceNode(PokerNode *node, int lastPlayer, double reachP0, double reachP1, double reachChance)
+double CFR::handleChanceNode(PokerNode node, int lastPlayer, double reachP0, double reachP1, double reachChance, MasterMap *masterMap)
 {
     int nbChildren = node->numChildren();
     srand((unsigned) time(NULL));
@@ -68,25 +62,25 @@ double CFR::handleChanceNode(PokerNode *node, int lastPlayer, double reachP0, do
     return ev;
 }
 
-double CFR::handlePlayerNode(PokerNode *node, int lastPlayer, double reachP0, double reachP1, double reachChance)
+double CFR::handlePlayerNode(PokerNode node, int lastPlayer, double reachP0, double reachP1, double reachChance, MasterMap *masterMap)
 {
-    auto player = node->getPlayer();
-    int nbChildren = node->numChildren();
+    auto player = node.getPlayer();
+    int nbChildren = node.numChildren();
 
     if (nbChildren == 1) {
-        auto child = node->getChild(0);
+        auto child = node.getChild(0);
         return this->runHelper(child, player, reachP0, reachP1, reachChance);
     }
 
     Hand playerCard;
 
     if (player == 0) {
-        playerCard = node->p0Card;
+        playerCard = node.p0Card;
     } else if (player == 1) {
-        playerCard = node->p1Card;
+        playerCard = node.p1Card;
     }
 
-    auto strategy = node->Strategy;
+    auto strategy = node.Strategy;
     auto actionUtils = FilledArrayDouble(nbChildren, 0.0);
 
     if (nbChildren == 0) {
@@ -95,7 +89,7 @@ double CFR::handlePlayerNode(PokerNode *node, int lastPlayer, double reachP0, do
 
     for (int i = 0; i<nbChildren; i++)
     {
-        auto child = node->getChild(i);
+        auto child = node.getChild(i);
         auto p = strategy[i];
         if (player == 0) {
             actionUtils[i] = this->runHelper(child, player, p*reachP0, reachP1, reachChance);
@@ -124,24 +118,25 @@ double CFR::handlePlayerNode(PokerNode *node, int lastPlayer, double reachP0, do
     // Update policy
     if (player == 0)
     {
-        node->ReachPr += reachP0;
-        for (int i = 0; i<node->RegretSum.size(); i++)
+        node.ReachPr += reachP0;
+        for (int i = 0; i<node.RegretSum.size(); i++)
         {
-            node->RegretSum[i] += reachP1 * regrets[i];
+            node.RegretSum[i] += reachP1 * regrets[i];
         }
     }
 
     else {
-        node->ReachPr += reachP1;
-        for (int i = 0; i<node->RegretSum.size(); i++)
+        node.ReachPr += reachP1;
+        for (int i = 0; i<node.RegretSum.size(); i++)
         {
-            node->RegretSum[i] += reachP0 * regrets[i];
+            node.RegretSum[i] += reachP0 * regrets[i];
         }
     }
 
     return util;
 }
 
+/*
 void CFR::UpdateTree() 
 {
 
@@ -181,3 +176,4 @@ void CFR::UpdateTree()
         node->ReachPr = 0.0;
     }
 };
+*/
