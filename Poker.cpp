@@ -117,19 +117,25 @@ int PokerNode::numChildren(MasterMap* masterMap)
     return this->children.size();
 }
 
-PokerNode* PokerNode::getChild(int i, MasterMap* masterMap)
+PokerNode PokerNode::getChild(int i, MasterMap* masterMap)
 {
-    if (this->children.size() == 0)
+    // FIX ME: Get from mastermap with cards etc... 
+    if (this->childrenHistory.size() == 0)
     {
         this->buildChildren(masterMap);
     }
 
-    return this->children.at(i);
+    std::string index = this->childrenHistory.at(i);
+
+    auto val = masterMap->getNode(index);
+
+    return val;
 }
 
-PokerNode* PokerNode::getParent()
+PokerNode PokerNode::getParent()
 {
-    return this->parent;
+    // FIX ME: maybe remote it
+    // return this.parent;
 }
 
 double PokerNode::getChildProbability(int i)
@@ -369,28 +375,21 @@ std::vector<PokerNode> PokerNode::buildChildren(MasterMap* masterMap)
     } else if (previousAction == h_Bet1) {
         return this->buildCFRAction(masterMap, true);
     } else if (previousAction == h_Bet2) {
-
         return this->buildCFRAction(masterMap, true);
     } else if (previousAction == h_Bet3) {
-
         return this->buildCFRAction(masterMap, true);
     } else if (previousAction == h_Raise1) {
-
         return this->buildCFRAction(masterMap, true);
     } else if (previousAction == h_Raise2) {
-
         return this->buildCFRAction(masterMap, true);
     } else if (previousAction == h_AllIn) {
-
         return this->buildCFRAction(masterMap, false);
     } else if (previousAction == h_CheckBack) {
         if (this->stage == 0 || this->stage == 1) {
-   
             return this->buildChanceNode(masterMap);
         } else { return; }
     } else if (previousAction == h_Call) {
         if (this->stage == 0 || this->stage == 1) {
-
             return this->buildChanceNode(masterMap);
         } else { return; }
     }
@@ -408,6 +407,8 @@ std::vector<PokerNode> PokerNode::buildChildren(MasterMap* masterMap)
 }
 
 std::vector<PokerNode> PokerNode::buildRootDeals(MasterMap* masterMap) {
+    auto currPlayer = this->getPlayer();
+    std::string nextHistory = this->computeCardHistory(currPlayer, (this->history + h_P0Deal));
     PokerNode child = PokerNode(
         -1, 
         this->limitedRunouts,
@@ -419,7 +420,7 @@ std::vector<PokerNode> PokerNode::buildRootDeals(MasterMap* masterMap) {
         this->board,
         this->p0Card,
         this->p1Card,
-        h_P0Deal
+        nextHistory
     );
     // FIX ME: memoize the following code, maybe with a 'computed' variable ?
 
@@ -438,6 +439,8 @@ std::vector<PokerNode> PokerNode::buildRootDeals(MasterMap* masterMap) {
 }
 
 std::vector<PokerNode> PokerNode::buildP0Deal(MasterMap* masterMap) {
+    auto currPlayer = this->getPlayer();
+    std::string nextHistory = this->computeCardHistory(currPlayer, (this->history + h_P0Deal));
     PokerNode child = PokerNode(
         -1, 
         this->limitedRunouts,
@@ -449,7 +452,7 @@ std::vector<PokerNode> PokerNode::buildP0Deal(MasterMap* masterMap) {
         this->board, 
         this->p0Card,
         this->p1Card,
-        this->history + h_P0Deal
+        nextHistory
         );
     child.parent = this;
     child.turnIndex = this->turnIndex;
@@ -470,6 +473,8 @@ std::vector<PokerNode> PokerNode::buildP0Deal(MasterMap* masterMap) {
 }
 
 std::vector<PokerNode> PokerNode::buildP1Deal(MasterMap* masterMap) {
+    auto currPlayer = this->getPlayer();
+    std::string nextHistory = this->computeCardHistory(currPlayer, (this->history + h_P1Deal));
     PokerNode child = PokerNode(
         0, 
         this->limitedRunouts,
@@ -481,13 +486,13 @@ std::vector<PokerNode> PokerNode::buildP1Deal(MasterMap* masterMap) {
         this->board, 
         this->p0Card,
         this->p1Card,
-        this->history + h_P1Deal
+        nextHistory
     );
     child.parent = this;
     child.turnIndex = this->turnIndex;
 
     // this->children.push_back(child);
-    this->childrenHistory.push_back(history + h_P1Deal);
+    this->childrenHistory.push_back(nextHistory);
     int nbActions = this->childrenHistory.size();
     this->RegretSum = filledArrayDouble(nbActions, 0.0);
     this->StrategySum = filledArrayDouble(nbActions, 0.0);
@@ -568,7 +573,8 @@ std::vector<PokerNode> PokerNode::buildOpenAction(MasterMap* masterMap) {
     for (int i = 0; i<choices.size(); i++)
     {
         double addToPotSize = (double)this->potSize * bets[i];
-
+        auto currPlayer = this->getPlayer();
+        std::string nextHistory = this->computeCardHistory(currPlayer, (this->history + choices[i]));
         PokerNode child = PokerNode(
             1, 
             this->limitedRunouts,
@@ -580,12 +586,12 @@ std::vector<PokerNode> PokerNode::buildOpenAction(MasterMap* masterMap) {
             this->board, 
             this->p0Card,
             this->p1Card,
-            this->history + choices[i]
+            nextHistory
         );
         child.parent = this;
         child.turnIndex = this->turnIndex;
 
-        this->childrenHistory.push_back(history + choices[i]);
+        this->childrenHistory.push_back(nextHistory);
         vectorToReturn.push_back(child);
     }
 
@@ -668,7 +674,8 @@ std::vector<PokerNode> PokerNode::buildCBAction(MasterMap* masterMap) {
     for (int i = 0; i<choices.size(); i++)
     {
         double addToPotSize = (double)this->potSize * bets[i];
-
+        auto currPlayer = this->getPlayer();
+        std::string nextHistory = this->computeCardHistory(currPlayer, (this->history + choices[i]));
         PokerNode child = PokerNode(
             0, 
             this->limitedRunouts,
@@ -680,13 +687,13 @@ std::vector<PokerNode> PokerNode::buildCBAction(MasterMap* masterMap) {
             this->board, 
             this->p0Card,
             this->p1Card,
-            this->history + choices[i]
+            nextHistory
         );
         child.parent = this;
         child.turnIndex = this->turnIndex;
 
         // this->children.push_back(child);
-        this->childrenHistory.push_back(history + choices[i]);
+        this->childrenHistory.push_back(nextHistory);
         vectorToReturn.push_back(child);
     }
 
@@ -920,7 +927,8 @@ std::vector<PokerNode> PokerNode::buildCFRAction(MasterMap* masterMap, bool isRa
     for (int index = 0; index<choices.size(); index++)
     {
         double addToPotSize = double(this->potSize) + (bets[index] * this->currentFacingBet); // FIX ME: implement it
-
+        auto currPlayer = this->getPlayer();
+        std::string nextHistory = this->computeCardHistory(currPlayer, (this->history + choices[index]));
         PokerNode child = PokerNode(
             player, 
             this->limitedRunouts,
@@ -932,13 +940,13 @@ std::vector<PokerNode> PokerNode::buildCFRAction(MasterMap* masterMap, bool isRa
             this->board, 
             this->p0Card,
             this->p1Card,
-            this->history + choices[index]
+            nextHistory
         );
         child.parent = this;
         child.turnIndex = this->turnIndex;
 
         //this->children.push_back(child);
-        this->childrenHistory.push_back(history + choices[index]);
+        this->childrenHistory.push_back(nextHistory);
         vectorToReturn.push_back(child);
     }
     int nbActions = this->childrenHistory.size();
@@ -995,6 +1003,8 @@ std::vector<PokerNode> PokerNode::buildChanceNode(MasterMap* masterMap)
 
         auto board = this->board;
         board.push_back(validCards[index]);
+        auto currPlayer = this->getPlayer();
+        std::string nextHistory = this->computeCardHistory(currPlayer, (this->history + "*" + validCards[index] + "*" + h_Chance));    
 
         PokerNode child =PokerNode(
             this->player, 
@@ -1007,13 +1017,13 @@ std::vector<PokerNode> PokerNode::buildChanceNode(MasterMap* masterMap)
             board, 
             this->p0Card,
             this->p1Card,
-            this->history + "*" + validCards[index] + "*" + h_Chance
+            nextHistory
         );
         child.parent = this;
         child.turnIndex = finalTurnIndex;
 
         // this->children.push_back(child);
-        this->childrenHistory.push_back(this->history + "*" + validCards[index] + "*" + h_Chance);
+        this->childrenHistory.push_back(nextHistory);
 
         masterMap->add(vectorToReturn);
 
@@ -1029,6 +1039,33 @@ std::vector<PokerNode> PokerNode::buildChanceNode(MasterMap* masterMap)
     this->probabilities = uniformDist(this->childrenHistory.size());
 
 
+}
+
+std::string PokerNode::computeCardHistory(int currentPlayer, std::string history)
+{
+    std::string returnVal = history;
+    std::string nextCards;
+    if (currentPlayer == 1)
+    {
+        auto card1 = this->p0Card.Cards[0];
+        auto card2 = this->p0Card.Cards[2];
+
+        nextCards = card1 + card2;
+    }
+    else 
+    {
+        auto card1 = this->p1Card.Cards[0];
+        auto card2 = this->p1Card.Cards[2];
+
+        nextCards = card1 + card2;
+    }
+
+    for (int i=0; i<4; i++)
+    {
+        returnVal[i] = nextCards[i];
+    }
+
+    return returnVal;
 }
 
 MasterMap::MasterMap()
@@ -1065,4 +1102,63 @@ void MasterMap::add(std::vector<PokerNode> children)
         );
         this->map.at(child.history) = heapNode;
     };
+}
+
+PokerNode MasterMap::getNode(std::string str)
+{
+    // Have to return copy not pointer
+    // FIX ME: frequencies !!!
+    auto val = this->map.at(str);
+    return PokerNode(
+            val->player, 
+            val->limitedRunouts,
+            val->potSize,
+            val->effectiveSize,
+            val->currentFacingBet, 
+            val->raiseLevel,
+            val->stage,
+            val->board, 
+            val->p0Card,
+            val->p1Card,
+            val->history
+        );
+}
+
+void MasterMap::Update()
+{
+    for (auto kv : this->map)
+    {
+        auto node = kv.second;
+
+        // Update strategy
+        for (int i=0; i<node->StrategySum.size(); i++)
+        {
+            node->StrategySum[i] = node->ReachPr * node->Strategy[i];
+        }
+
+        node->ReachPrSum += node->ReachPr;
+
+        // Get Strategy
+        double normalizingSum = 0.0;
+        vector<double> regrets;
+
+        for (int i=0; i<node->RegretSum.size(); i++)
+        {
+            regrets.push_back(node->RegretSum[i]);
+            normalizingSum += node->RegretSum[i];
+        }
+
+        for (int index=0; index<regrets.size(); index++)
+        {
+            if (normalizingSum > 0) {
+                regrets[index] = regrets[index] / normalizingSum;
+            } else {
+                regrets[index] = 1.0 / double(regrets.size());
+            }
+        }
+
+        node->Strategy = regrets;
+
+        node->ReachPr = 0.0;
+    }
 }

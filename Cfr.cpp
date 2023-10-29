@@ -37,13 +37,13 @@ double CFR::runHelper(PokerNode node, int lastPlayer, double reachP0, double rea
 
         case 'c':
 
-            ev = this->handleChanceNode(node, lastPlayer, reachP0, reachP1, reachChance);
+            ev = this->handleChanceNode(node, lastPlayer, reachP0, reachP1, reachChance, masterMap);
         break;
 
         case 'p':
 
             auto sgn = getSign(lastPlayer, node.getPlayer());
-            ev = sgn * this->handlePlayerNode(node, lastPlayer, reachP0, reachP1, reachChance);
+            ev = sgn * this->handlePlayerNode(node, lastPlayer, reachP0, reachP1, reachChance, masterMap);
             break;
     }
 
@@ -52,12 +52,12 @@ double CFR::runHelper(PokerNode node, int lastPlayer, double reachP0, double rea
 
 double CFR::handleChanceNode(PokerNode node, int lastPlayer, double reachP0, double reachP1, double reachChance, MasterMap *masterMap)
 {
-    int nbChildren = node->numChildren();
+    int nbChildren = node.numChildren(masterMap);
     srand((unsigned) time(NULL));
     int random = rand() % nbChildren;
-    auto child = node->getChild(random);
-    auto p = (double)node->getChildProbability(random);
-    double ev = p * this->runHelper(child, lastPlayer, reachP0, reachP1, reachChance*p);
+    auto child = node.getChild(random, masterMap);
+    auto p = (double)node.getChildProbability(random);
+    double ev = p * this->runHelper(child, lastPlayer, reachP0, reachP1, reachChance*p, masterMap);
 
     return ev;
 }
@@ -65,11 +65,11 @@ double CFR::handleChanceNode(PokerNode node, int lastPlayer, double reachP0, dou
 double CFR::handlePlayerNode(PokerNode node, int lastPlayer, double reachP0, double reachP1, double reachChance, MasterMap *masterMap)
 {
     auto player = node.getPlayer();
-    int nbChildren = node.numChildren();
+    int nbChildren = node.numChildren(masterMap);
 
     if (nbChildren == 1) {
-        auto child = node.getChild(0);
-        return this->runHelper(child, player, reachP0, reachP1, reachChance);
+        auto child = node.getChild(0, masterMap);
+        return this->runHelper(child, player, reachP0, reachP1, reachChance, masterMap);
     }
 
     Hand playerCard;
@@ -89,12 +89,12 @@ double CFR::handlePlayerNode(PokerNode node, int lastPlayer, double reachP0, dou
 
     for (int i = 0; i<nbChildren; i++)
     {
-        auto child = node.getChild(i);
+        auto child = node.getChild(i, masterMap);
         auto p = strategy[i];
         if (player == 0) {
-            actionUtils[i] = this->runHelper(child, player, p*reachP0, reachP1, reachChance);
+            actionUtils[i] = this->runHelper(child, player, p*reachP0, reachP1, reachChance, masterMap);
         } else {
-            actionUtils[i] = this->runHelper(child, player, reachP0, p*reachP1, reachChance);
+            actionUtils[i] = this->runHelper(child, player, reachP0, p*reachP1, reachChance, masterMap);
         }
     }
 
@@ -145,21 +145,21 @@ void CFR::UpdateTree()
         auto node = kv.second;
 
         // Update strategy
-        for (int i=0; i<node->StrategySum.size(); i++)
+        for (int i=0; i<node.StrategySum.size(); i++)
         {
-            node->StrategySum[i] = node->ReachPr * node->Strategy[i];
+            node.StrategySum[i] = node.ReachPr * node.Strategy[i];
         }
 
-        node->ReachPrSum += node->ReachPr;
+        node.ReachPrSum += node.ReachPr;
 
         // Get Strategy
         double normalizingSum = 0.0;
         vector<double> regrets;
 
-        for (int i=0; i<node->RegretSum.size(); i++)
+        for (int i=0; i<node.RegretSum.size(); i++)
         {
-            regrets.push_back(node->RegretSum[i]);
-            normalizingSum += node->RegretSum[i];
+            regrets.push_back(node.RegretSum[i]);
+            normalizingSum += node.RegretSum[i];
         }
 
         for (int index=0; index<regrets.size(); index++)
@@ -171,9 +171,9 @@ void CFR::UpdateTree()
             }
         }
 
-        node->Strategy = regrets;
+        node.Strategy = regrets;
 
-        node->ReachPr = 0.0;
+        node.ReachPr = 0.0;
     }
 };
 */

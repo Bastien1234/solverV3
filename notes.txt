@@ -2,12 +2,14 @@
 
 [] check if all history is populated
 
-[] pass cards to history
+[X] pass cards to history
 
 [] rework limited runouts
 
-[] return from map when get child and not build it again
+[X] return from map when get child and not build it again
 
 [] cfr update tree to masternode update tree
 
 [] when storing child, pass frequencies !!!
+
+[] json instead of constants please

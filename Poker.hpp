@@ -3,6 +3,7 @@
 #include <string>
 #include <array>
 #include <vector>
+#include <unordered_map>
 
 #include "Hand.hpp"
 
@@ -95,6 +96,18 @@ const string h_Call      = "k";
 long getMemoValue(vector<string> array);
 vector<vector<string>> getLimitedRunouts(int nbRunouts);
 
+class MasterMap
+{
+public:
+    MasterMap();
+    ~MasterMap();
+
+    std::unordered_map<string, PokerNode*> map;
+    void add(std::vector<PokerNode> children);
+    PokerNode getNode(std::string);
+    void Update();
+};
+
 class PokerNode
 {
 private:
@@ -102,14 +115,8 @@ public:
     PokerNode *parent;
     int player;
     vector<double> probabilities;
-
-
-
-
     vector<vector<string>> limitedRunouts; // FIX ME: Kick that shit out to constants variables plz
     int turnIndex;
-
-
     short int Visited;
     int potSize;
     int effectiveSize;
@@ -143,8 +150,8 @@ public:
     ~PokerNode();
     int getPlayer();
     int numChildren(MasterMap* masterMap);
-    PokerNode *getChild(int i, MasterMap* masterMap);
-    PokerNode *getParent();
+    PokerNode getChild(int i, MasterMap* masterMap);
+    PokerNode getParent();
     double getChildProbability(int i);
     char type();
     bool isTerminal();
@@ -160,16 +167,8 @@ public:
     std::vector<PokerNode> buildCBAction(MasterMap* masterMap);
     std::vector<PokerNode> buildCFRAction(MasterMap* masterMap, bool isRaise);
     std::vector<PokerNode> buildChanceNode(MasterMap* masterMap);
-};
 
-class MasterMap
-{
-public:
-    MasterMap();
-    ~MasterMap();
-
-    std::unordered_map<string, PokerNode*> map;
-    void add(std::vector<PokerNode> children);
+    std::string computeCardHistory(int currentPlayer, std::string history);
 };
 
 // Utils functions
