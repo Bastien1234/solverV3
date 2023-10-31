@@ -159,17 +159,19 @@ public:
     Hand playerCard(int player);
     void instanciate();
 
-    std::vector<PokerNode> buildChildren(MasterMap* masterMap);
-    std::vector<PokerNode> buildRootDeals(MasterMap* masterMap);
-    std::vector<PokerNode> buildP0Deal(MasterMap* masterMap);
-    std::vector<PokerNode> buildP1Deal(MasterMap* masterMap);
-    std::vector<PokerNode> buildOpenAction(MasterMap* masterMap);
-    std::vector<PokerNode> buildCBAction(MasterMap* masterMap);
-    std::vector<PokerNode> buildCFRAction(MasterMap* masterMap, bool isRaise);
-    std::vector<PokerNode> buildChanceNode(MasterMap* masterMap);
-
     std::string computeCardHistory(int currentPlayer, std::string history);
 };
+
+// Let's do it C style
+
+std::vector<PokerNode> buildChildren(PokerNode* pokerNode, MasterMap* masterMap);
+std::vector<PokerNode> buildRootDeals(PokerNode* pokerNode, MasterMap* masterMap);
+std::vector<PokerNode> buildP0Deal(PokerNode* pokerNode, MasterMap* masterMap);
+std::vector<PokerNode> buildP1Deal(PokerNode* pokerNode, MasterMap* masterMap);
+std::vector<PokerNode> buildOpenAction(PokerNode* pokerNode, MasterMap* masterMap);
+std::vector<PokerNode> buildCBAction(PokerNode* pokerNode, MasterMap* masterMap);
+std::vector<PokerNode> buildCFRAction(PokerNode* pokerNode, MasterMap* masterMap, bool isRaise);
+std::vector<PokerNode> buildChanceNode(PokerNode* pokerNode, MasterMap* masterMap);
 
 // Utils functions
 vector<string> getFullBoard(vector<string> currentBoard, vector<string> player, vector<string>opponent);
