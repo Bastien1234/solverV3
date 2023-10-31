@@ -106,27 +106,37 @@ int PokerNode::getPlayer()
     return this->player;
 }
 
-int PokerNode::numChildren(MasterMap* masterMap)
+int numChildren(PokerNode *pokerNode, MasterMap* masterMap)
 {
-    if (this->children.size() == 0)
+    if (pokerNode->childrenHistory.size() == 0)
     {
-        buildChildren(this, masterMap);
+        buildChildren(pokerNode, masterMap);
     }
 
-    return this->children.size();
+    return pokerNode->childrenHistory.size();
 }
 
-PokerNode PokerNode::getChild(int i, MasterMap* masterMap)
+PokerNode getChild(PokerNode *pokerNode, int i, MasterMap* masterMap)
 {
+    std::cout << "in get child, i = " << i << std::endl;
     // FIX ME: Get from mastermap with cards etc... 
-    if (this->childrenHistory.size() == 0)
+    if (pokerNode->childrenHistory.size() == 0)
     {
-        buildChildren(this, masterMap);
+        buildChildren(pokerNode, masterMap);
     }
 
-    std::string index = this->childrenHistory.at(i);
+    std::cout << "all history" << std::endl;
+    for (auto el : pokerNode->childrenHistory)
+    {
+        std::cout << el << endl;
+    }
+
+
+    std::string index = pokerNode->childrenHistory[i];
+    std::cout << "asking with : " << index << std::endl;
 
     auto val = masterMap->getNode(index);
+    std::cout << "val " << val.history << std::endl;
 
     return val;
 }
@@ -137,9 +147,21 @@ PokerNode PokerNode::getParent()
     // return this.parent;
 }
 
-double PokerNode::getChildProbability(int i)
+double getChildProbability(PokerNode *pokerNode, int i, MasterMap *masterMap)
 {
-    return this->probabilities.at(i);
+    if (pokerNode->probabilities.size() == 0)
+    {
+        std::cout << "building children" << std::endl;
+        buildChildren(pokerNode, masterMap);
+    }
+        std::cout << "get child probs, i :" << i << std::endl;
+        std::cout << "probs :" << std::endl;
+        for (auto el : pokerNode->probabilities)
+        {
+            std::cout << el << std::endl;
+        }
+
+    return pokerNode->probabilities[i];
 }
 
 char PokerNode::type()
@@ -356,7 +378,8 @@ void PokerNode::instanciate()
 std::vector<PokerNode> buildChildren(PokerNode* pokerNode, MasterMap* masterMap)
 {
     if (pokerNode->isTerminal()) {
-        return;
+        std::cout << "SHOULD NEVER BE HERE" << std::endl;
+        return std::vector<PokerNode> {};
     }
 
     auto previousAction = pokerNode->history.substr(pokerNode->history.size() -1);
@@ -386,28 +409,26 @@ std::vector<PokerNode> buildChildren(PokerNode* pokerNode, MasterMap* masterMap)
     } else if (previousAction == h_CheckBack) {
         if (pokerNode->stage == 0 || pokerNode->stage == 1) {
             return buildChanceNode(pokerNode, masterMap);
-        } else { return; }
+        } else { 
+            std::cout << "SHOULD NEVER BE HERE" << std::endl;
+            return std::vector<PokerNode> {}; 
+        }
     } else if (previousAction == h_Call) {
         if (pokerNode->stage == 0 || pokerNode->stage == 1) {
             return buildChanceNode(pokerNode, masterMap);
-        } else { return; }
+        } else { 
+            std::cout << "SHOULD NEVER BE HERE" << std::endl;
+            return std::vector<PokerNode> {}; 
+        }
     }
 
-/*
-    int nbActions = this->children.size();
-    this->RegretSum = filledArrayDouble(nbActions, 0.0);
-    this->StrategySum = filledArrayDouble(nbActions, 0.0);
-    this->Strategy = filledArrayDouble(nbActions, 1.0 / (double) nbActions);
-    this->ReachPr = 0.0;
-    this->ReachPrSum = 0.0;
-    // FIX ME: check where this is updated
-    this->probabilities = uniformDist(nbActions);
-*/
 }
 
 std::vector<PokerNode> buildRootDeals(PokerNode* pokerNode, MasterMap* masterMap) {
     auto currPlayer = pokerNode->getPlayer();
+    std::cout << "current history = " << pokerNode->history << std::endl;
     std::string nextHistory = pokerNode->computeCardHistory(currPlayer, (pokerNode->history + h_P0Deal));
+    std::cout << "computed history = " << nextHistory << std::endl;
     PokerNode child = PokerNode(
         -1, 
         pokerNode->limitedRunouts,
@@ -425,7 +446,7 @@ std::vector<PokerNode> buildRootDeals(PokerNode* pokerNode, MasterMap* masterMap
 
 // CODE children history instead of children
     // pokerNode->children.push_back(child);
-    pokerNode->childrenHistory.push_back(h_P0Deal);
+    pokerNode->childrenHistory.push_back(nextHistory);
     int nbActions = pokerNode->childrenHistory.size();
     pokerNode->RegretSum = filledArrayDouble(nbActions, 0.0);
     pokerNode->StrategySum = filledArrayDouble(nbActions, 0.0);
@@ -457,9 +478,9 @@ std::vector<PokerNode> buildP0Deal(PokerNode* pokerNode, MasterMap* masterMap) {
     child.turnIndex = pokerNode->turnIndex;
 
     // pokerNode->children.push_back(child);
-    pokerNode->childrenHistory.push_back(pokerNode->history + h_P0Deal);
+    pokerNode->childrenHistory.push_back(nextHistory);
     int nbActions = pokerNode->childrenHistory.size();
-    int nbActions = pokerNode->children.size();
+    // int nbActions = pokerNode->children.size();
     pokerNode->RegretSum = filledArrayDouble(nbActions, 0.0);
     pokerNode->StrategySum = filledArrayDouble(nbActions, 0.0);
     pokerNode->Strategy = filledArrayDouble(nbActions, (1.0 / (float)nbActions));
@@ -1023,10 +1044,7 @@ std::vector<PokerNode> buildChanceNode(PokerNode *pokerNode, MasterMap* masterMa
 
         // pokerNode->children.push_back(child);
         pokerNode->childrenHistory.push_back(nextHistory);
-
-        masterMap->add(vectorToReturn);
-
-        return vectorToReturn;
+        vectorToReturn.push_back(child);
     }
 
 
@@ -1036,6 +1054,10 @@ std::vector<PokerNode> buildChanceNode(PokerNode *pokerNode, MasterMap* masterMa
     pokerNode->StrategySum = filledArrayDouble(nbActions, 0.0);
     pokerNode->Strategy = filledArrayDouble(nbActions, (1.0 / (float)nbActions));
     pokerNode->probabilities = uniformDist(pokerNode->childrenHistory.size());
+
+    masterMap->add(vectorToReturn);
+
+    return vectorToReturn;
 
 
 }
@@ -1047,14 +1069,14 @@ std::string PokerNode::computeCardHistory(int currentPlayer, std::string history
     if (currentPlayer == 1)
     {
         auto card1 = this->p0Card.Cards[0];
-        auto card2 = this->p0Card.Cards[2];
+        auto card2 = this->p0Card.Cards[1];
 
         nextCards = card1 + card2;
     }
     else 
     {
         auto card1 = this->p1Card.Cards[0];
-        auto card2 = this->p1Card.Cards[2];
+        auto card2 = this->p1Card.Cards[1];
 
         nextCards = card1 + card2;
     }
@@ -1067,3 +1089,104 @@ std::string PokerNode::computeCardHistory(int currentPlayer, std::string history
     return returnVal;
 }
 
+MasterMap::MasterMap()
+{
+    // Pre allocate some size ?
+}
+
+MasterMap::~MasterMap()
+{
+    for (auto n : this->map)
+    {
+        delete(n.second);
+    }
+}
+
+void MasterMap::add(std::vector<PokerNode> children)
+{
+    for (auto child : children)
+    {
+        // int currentPlayer = child.getPlayer();
+        
+        PokerNode *heapNode = new PokerNode(
+            child.player, 
+            child.limitedRunouts,
+            child.potSize,
+            child.effectiveSize,
+            child.currentFacingBet, 
+            child.raiseLevel,
+            child.stage,
+            child.board, 
+            child.p0Card,
+            child.p1Card,
+            child.history
+        );
+        this->map[child.history] = heapNode;
+    std::cout << "adding to map : " << child.history << std::endl;
+    };
+}
+
+PokerNode MasterMap::getNode(std::string str)
+{
+    std::cout << "=============" << std::endl;
+    std::cout << "currently asking node : " << str << std::endl;
+    std::cout << "all nodes : " << std::endl;
+    for (auto el : this->map) {
+        std::cout << el.first << std::endl;
+    }
+
+    // FIX ME: frequencies !!!
+    auto val = this->map[str];
+    return PokerNode(
+            val->player, 
+            val->limitedRunouts,
+            val->potSize,
+            val->effectiveSize,
+            val->currentFacingBet, 
+            val->raiseLevel,
+            val->stage,
+            val->board, 
+            val->p0Card,
+            val->p1Card,
+            val->history
+        );
+}
+
+void MasterMap::Update()
+{
+    for (auto kv : this->map)
+    {
+        auto node = kv.second;
+
+        // Update strategy
+        for (int i=0; i<node->StrategySum.size(); i++)
+        {
+            node->StrategySum[i] = node->ReachPr * node->Strategy[i];
+        }
+
+        node->ReachPrSum += node->ReachPr;
+
+        // Get Strategy
+        double normalizingSum = 0.0;
+        vector<double> regrets;
+
+        for (int i=0; i<node->RegretSum.size(); i++)
+        {
+            regrets.push_back(node->RegretSum[i]);
+            normalizingSum += node->RegretSum[i];
+        }
+
+        for (int index=0; index<regrets.size(); index++)
+        {
+            if (normalizingSum > 0) {
+                regrets[index] = regrets[index] / normalizingSum;
+            } else {
+                regrets[index] = 1.0 / double(regrets.size());
+            }
+        }
+
+        node->Strategy = regrets;
+
+        node->ReachPr = 0.0;
+    }
+}

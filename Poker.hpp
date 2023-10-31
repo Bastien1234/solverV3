@@ -96,17 +96,7 @@ const string h_Call      = "k";
 long getMemoValue(vector<string> array);
 vector<vector<string>> getLimitedRunouts(int nbRunouts);
 
-class MasterMap
-{
-public:
-    MasterMap();
-    ~MasterMap();
 
-    std::unordered_map<string, PokerNode*> map;
-    void add(std::vector<PokerNode> children);
-    PokerNode getNode(std::string);
-    void Update();
-};
 
 class PokerNode
 {
@@ -149,10 +139,8 @@ public:
     );
     ~PokerNode();
     int getPlayer();
-    int numChildren(MasterMap* masterMap);
-    PokerNode getChild(int i, MasterMap* masterMap);
+    
     PokerNode getParent();
-    double getChildProbability(int i);
     char type();
     bool isTerminal();
     double utility(int player);
@@ -162,8 +150,23 @@ public:
     std::string computeCardHistory(int currentPlayer, std::string history);
 };
 
+class MasterMap
+{
+public:
+    MasterMap();
+    ~MasterMap();
+
+    std::unordered_map<string, PokerNode*> map;
+    void add(std::vector<PokerNode> children);
+    PokerNode getNode(std::string);
+    void Update();
+};
+
 // Let's do it C style
 
+double getChildProbability(PokerNode *pokerNode, int i, MasterMap *masterMap);
+int numChildren(PokerNode* pokerNode, MasterMap* masterMap);
+PokerNode getChild(PokerNode* pokerNode, int i, MasterMap* masterMap);
 std::vector<PokerNode> buildChildren(PokerNode* pokerNode, MasterMap* masterMap);
 std::vector<PokerNode> buildRootDeals(PokerNode* pokerNode, MasterMap* masterMap);
 std::vector<PokerNode> buildP0Deal(PokerNode* pokerNode, MasterMap* masterMap);

@@ -86,6 +86,8 @@ int main()
         root.p0Card = validHandOOP;
         root.p1Card = validHandIP;
 
+        masterMap.add(std::vector<PokerNode>{root});
+
 
         // printf("Check root node\neffecitve size : %d, pot size : %d\n", root->effectiveSize, root->potSize);
 

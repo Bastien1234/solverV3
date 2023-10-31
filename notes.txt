@@ -8,8 +8,10 @@
 
 [X] return from map when get child and not build it again
 
-[] cfr update tree to masternode update tree
+[X] cfr update tree to masternode update tree
 
 [] when storing child, pass frequencies !!!
 
 [] json instead of constants please
+
+[] mutexes and multithreadding
