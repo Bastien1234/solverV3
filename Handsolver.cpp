@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <string>
-
+#include <stdio.h>
 
 Handsolver::Handsolver()
 {
@@ -14,6 +14,12 @@ Handsolver::~Handsolver()
 
 long Handsolver::solve(std::vector<std::string> arr)
 {
+    printf("Entering solve function\n");
+    for (auto el : arr)
+    {
+        printf("el : %s\n", el);
+    }
+
     // Declare state as bits
     unsigned short int stateStraight = 0;
     unsigned short int stateHearts = 0;
