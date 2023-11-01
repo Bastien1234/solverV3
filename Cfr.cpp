@@ -98,9 +98,11 @@ double CFR::handlePlayerNode(PokerNode node, int lastPlayer, double reachP0, dou
         auto child = getChild(&node, i, masterMap);
         auto p = strategy[i];
         if (player == 0) {
-            actionUtils[i] = this->runHelper(child, player, p*reachP0, reachP1, reachChance, masterMap);
+            auto comboFrequency = node.p0Card.Frequency;
+            actionUtils[i] = this->runHelper(child, player, comboFrequency * p * reachP0, reachP1, reachChance, masterMap);
         } else {
-            actionUtils[i] = this->runHelper(child, player, reachP0, p*reachP1, reachChance, masterMap);
+            auto comboFrequency = node.p1Card.Frequency;
+            actionUtils[i] = this->runHelper(child, player, reachP0, comboFrequency * p * reachP1, reachChance, masterMap);
         }
     }
 
