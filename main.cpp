@@ -20,10 +20,23 @@
 using namespace std;
 using namespace std::chrono;
 
-const int N_ITERATIONS = 100;
+const int N_ITERATIONS = 100; // FIX ME: move to constants ?
 
-int main()
+
+
+int main(int argc, char** argv)
 {
+
+    for (int i = 0; i < argc; ++i)
+    {
+        string ar(argv[i]);
+        if (ar == "--test")
+        {
+            printf("Testing !\n");
+
+            return 0;
+        }
+    }
     Deck deck;
     Handsolver handsolver;
     Range range;
