@@ -137,6 +137,20 @@ public:
         Hand _p1Card,
         string _history
     );
+    PokerNode(
+        int _player,
+        vector<vector<string>> _limitedRunouts,
+        int _potSize,
+        int _effectiveSize,
+        int _currentFacingBet,
+        int _raiseLevel,
+        int _stage,
+        vector<string> _board,
+        Hand _p0Card,
+        Hand _p1Card,
+        string _history,
+        int _turnIndex
+    );
     ~PokerNode();
     int getPlayer();
     

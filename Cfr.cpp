@@ -53,10 +53,8 @@ double CFR::runHelper(PokerNode node, int lastPlayer, double reachP0, double rea
 double CFR::handleChanceNode(PokerNode node, int lastPlayer, double reachP0, double reachP1, double reachChance, MasterMap *masterMap)
 {
     int nbChildren = numChildren(&node, masterMap);
-    std::cout << "in chance node, nb children = " << nbChildren << std::endl;
     srand((unsigned) time(NULL));
     int random = rand() % nbChildren;
-    std::cout << "random : " << random << std::endl;
     auto child = getChild(&node, random, masterMap);
     // auto p = (double)getChildProbability(&node, random, masterMap);
     // double ev = p * this->runHelper(child, lastPlayer, reachP0, reachP1, reachChance*p, masterMap);
@@ -69,8 +67,6 @@ double CFR::handlePlayerNode(PokerNode node, int lastPlayer, double reachP0, dou
 {
     auto player = node.getPlayer();
     int nbChildren = numChildren(&node, masterMap);
-
-    std::cout << "in cfr, nb children = " << nbChildren << std::endl;
 
     if (nbChildren == 1) {
         auto child = getChild(&node, 0, masterMap);

@@ -15,3 +15,5 @@
 [] json instead of constants please
 
 [] mutexes and multithreadding
+
+[] current history == current player's hand

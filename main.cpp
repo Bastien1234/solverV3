@@ -12,6 +12,8 @@
 #include "Range.hpp"
 #include "Cfr.hpp"
 
+#include "Test.hpp"
+
 #include "backward.hpp"
 
 // #include <nlohmann/json.hpp>
@@ -30,13 +32,14 @@ int main(int argc, char** argv)
     for (int i = 0; i < argc; ++i)
     {
         string ar(argv[i]);
-        if (ar == "--test")
+        if (ar == "test")
         {
-            printf("Testing !\n");
+            RunAllTests();
 
             return 0;
         }
     }
+    
     Deck deck;
     Handsolver handsolver;
     Range range;
