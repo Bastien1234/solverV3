@@ -14,7 +14,7 @@ using namespace std;
 // -----------------
 const int MaxRaises = 2;
 const int Iterations1 = 100000;
-const int HandsToKeepFromRange = 30;
+static const int HandsToKeepFromRange = 30;
 static const int Pot = 75;
 static const int EffectiveStack = 450;
 const double Threashold = 0.6;

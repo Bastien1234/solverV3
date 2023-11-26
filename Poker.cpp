@@ -314,7 +314,17 @@ double PokerNode::utility(int player)
         opponentFinalhand.push_back(cardOpponent.Cards.at(0));
         opponentFinalhand.push_back(cardOpponent.Cards.at(1));
 
+        string handhero = "";
+        for (auto el : cardPlayer.Cards) { handhero.append(el); }
+        std::cout << "hand of hero : " << handhero << std::endl;
+
+        string handvilain = "";
+        for (auto el : cardOpponent.Cards) { handvilain.append(el); }
+        std::cout << "hand of vilain : " << handvilain << std::endl;
+
+        printf("solving hero's hand\n");
         long playerHandValue = handsolver.solve(playerFinalHand);
+        printf("solving vilains's hand\n");
         long opponentHandValue = handsolver.solve(opponentFinalhand);
 
 
@@ -329,7 +339,7 @@ double PokerNode::utility(int player)
         }
     }
 
-        printf("case turn\n");
+    printf("case turn\n");
 
 
     // Case flop and turn showdown

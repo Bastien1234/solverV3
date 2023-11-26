@@ -46,10 +46,13 @@ int main(int argc, char** argv)
 
     auto start = high_resolution_clock::now();
 
-    auto lro = getLimitedRunouts(100);
+    auto lro = getLimitedRunouts(50);
 
-    auto handsOOP = range.range_to_list(MatrixOOP);
-    auto handsIP = range.range_to_list(MatrixIp);
+    auto _handsOOP = range.range_to_list(MatrixOOP);
+    auto _handsIP = range.range_to_list(MatrixIp);
+    auto handsOOP = vector<Hand>(_handsOOP.begin(), _handsOOP.begin() + HandsToKeepFromRange);
+    auto handsIP = vector<Hand>(_handsIP.begin(), _handsIP.begin() + HandsToKeepFromRange);
+
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine e(seed);
