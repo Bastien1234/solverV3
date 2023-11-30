@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <string>
+#include <stdio.h>
+#include <iostream>
 
 
 Handsolver::Handsolver()
@@ -14,6 +16,9 @@ Handsolver::~Handsolver()
 
 long Handsolver::solve(std::vector<std::string> arr)
 {
+
+    std::string curhand = "";
+    for (auto e : arr) { curhand.append(e); }
     // Declare state as bits
     unsigned short int stateStraight = 0;
     unsigned short int stateHearts = 0;
@@ -34,6 +39,7 @@ long Handsolver::solve(std::vector<std::string> arr)
 
     int colorsCount[] = { 0, 0, 0, 0 };
     int valuesCount[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
 
     for (auto element : arr)
     {
@@ -119,6 +125,8 @@ long Handsolver::solve(std::vector<std::string> arr)
         }
     }
 
+
+
     for (int i=0; i<14; i++)
     {
         if (valuesCount[i] == 4)
@@ -193,6 +201,8 @@ long Handsolver::solve(std::vector<std::string> arr)
 			}
 		}
     }
+
+
 
 
     /*
@@ -275,6 +285,8 @@ long Handsolver::solve(std::vector<std::string> arr)
     /*
 	   Check is possible full house
 	*/
+
+
 
 	if (threeOfAKind > 0 && bestPair > 0)
     {
@@ -362,6 +374,8 @@ long Handsolver::solve(std::vector<std::string> arr)
         return returnValue;
     }
 
+
+
     /*
 		Check for possible straight
 	*/
@@ -408,6 +422,8 @@ long Handsolver::solve(std::vector<std::string> arr)
     /*
         Two paris
     */
+
+
 
    if (secondPair > 0)
    {
@@ -461,6 +477,8 @@ long Handsolver::solve(std::vector<std::string> arr)
 		Good enough to call though !!!
 	*/
 
+
+
 	vector<int> values;
 	int totalValues = 0;
 	for (int index = 14; index > 0; index--)
@@ -476,6 +494,8 @@ long Handsolver::solve(std::vector<std::string> arr)
 		}
 	}
 
+
+
 	long multiplier = 1e9;
 	long returnValue = 100000000000 + (bestPair * 1e9);
 	for (int i = 0; i < 5; i++)
@@ -483,6 +503,7 @@ long Handsolver::solve(std::vector<std::string> arr)
 		returnValue += (values[i] * multiplier);
 		multiplier /= 100;
 	}
+
 
 	return returnValue;
 }

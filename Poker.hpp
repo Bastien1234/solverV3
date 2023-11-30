@@ -3,6 +3,7 @@
 #include <string>
 #include <array>
 #include <vector>
+#include <unordered_map>
 
 #include "Hand.hpp"
 
@@ -13,14 +14,14 @@ using namespace std;
 // -----------------
 const int MaxRaises = 2;
 const int Iterations1 = 100000;
-const int HandsToKeepFromRange = 30;
+static const int HandsToKeepFromRange = 30;
 static const int Pot = 75;
 static const int EffectiveStack = 450;
 const double Threashold = 0.6;
 const int AllInSamplesize = 50;
 const int MaxChanceNodes = 1500;
 
-static const vector<string> board = {"Ah", "7d", "5h"};
+static vector<string> board = {"Ah", "7d", "5h"};
 
 // Strategies
 const vector<double> OOPFlopBets = {0.4};
@@ -95,22 +96,18 @@ const string h_Call      = "k";
 long getMemoValue(vector<string> array);
 vector<vector<string>> getLimitedRunouts(int nbRunouts);
 
+
+
 class PokerNode
 {
 private:
+public:
     PokerNode *parent;
     int player;
     vector<double> probabilities;
-
-
-
-
     vector<vector<string>> limitedRunouts; // FIX ME: Kick that shit out to constants variables plz
     int turnIndex;
-
-
     short int Visited;
-public:
     int potSize;
     int effectiveSize;
     int currentFacingBet;
@@ -126,6 +123,7 @@ public:
     double ReachPrSum;
     string history;
     vector<PokerNode*> children;
+    vector<string> childrenHistory;
     PokerNode(
         int _player,
         vector<vector<string>> _limitedRunouts,
@@ -139,27 +137,58 @@ public:
         Hand _p1Card,
         string _history
     );
+    PokerNode(
+        int _player,
+        vector<vector<string>> _limitedRunouts,
+        int _potSize,
+        int _effectiveSize,
+        int _currentFacingBet,
+        int _raiseLevel,
+        int _stage,
+        vector<string> _board,
+        Hand _p0Card,
+        Hand _p1Card,
+        string _history,
+        int _turnIndex
+    );
     ~PokerNode();
     int getPlayer();
-    int numChildren();
-    PokerNode *getChild(int i);
-    PokerNode *getParent();
-    double getChildProbability(int i);
+    
+    PokerNode getParent();
     char type();
     bool isTerminal();
     double utility(int player);
     Hand playerCard(int player);
     void instanciate();
 
-    void buildChildren();
-    void buildRootDeals();
-    void buildP0Deal();
-    void buildP1Deal();
-    void buildOpenAction();
-    void buildCBAction();
-    void buildCFRAction(bool isRaise);
-    void buildChanceNode();
+    std::string computeCardHistory(int currentPlayer, std::string history);
 };
+
+class MasterMap
+{
+public:
+    MasterMap();
+    ~MasterMap();
+
+    std::unordered_map<string, PokerNode*> map;
+    void add(std::vector<PokerNode> children);
+    PokerNode getNode(std::string);
+    void Update();
+};
+
+// Let's do it C style
+
+double getChildProbability(PokerNode *pokerNode, int i, MasterMap *masterMap);
+int numChildren(PokerNode* pokerNode, MasterMap* masterMap);
+PokerNode getChild(PokerNode* pokerNode, int i, MasterMap* masterMap);
+std::vector<PokerNode> buildChildren(PokerNode* pokerNode, MasterMap* masterMap);
+std::vector<PokerNode> buildRootDeals(PokerNode* pokerNode, MasterMap* masterMap);
+std::vector<PokerNode> buildP0Deal(PokerNode* pokerNode, MasterMap* masterMap);
+std::vector<PokerNode> buildP1Deal(PokerNode* pokerNode, MasterMap* masterMap);
+std::vector<PokerNode> buildOpenAction(PokerNode* pokerNode, MasterMap* masterMap);
+std::vector<PokerNode> buildCBAction(PokerNode* pokerNode, MasterMap* masterMap);
+std::vector<PokerNode> buildCFRAction(PokerNode* pokerNode, MasterMap* masterMap, bool isRaise);
+std::vector<PokerNode> buildChanceNode(PokerNode* pokerNode, MasterMap* masterMap);
 
 // Utils functions
 vector<string> getFullBoard(vector<string> currentBoard, vector<string> player, vector<string>opponent);

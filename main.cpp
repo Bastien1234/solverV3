@@ -11,6 +11,9 @@
 #include "Poker.hpp"
 #include "Range.hpp"
 #include "Cfr.hpp"
+#include "Logs.hpp"
+
+#include "Test.hpp"
 
 #include "backward.hpp"
 
@@ -20,32 +23,50 @@
 using namespace std;
 using namespace std::chrono;
 
-const int N_ITERATIONS = 1000;
+const int N_ITERATIONS = 100; // FIX ME: move to constants ?
 
-int main()
+
+
+int main(int argc, char** argv)
 {
+
+    for (int i = 0; i < argc; ++i)
+    {
+        string ar(argv[i]);
+        if (ar == "test")
+        {
+            RunAllTests();
+
+            return 0;
+        }
+    }
+    
     Deck deck;
     Handsolver handsolver;
     Range range;
 
     auto start = high_resolution_clock::now();
 
-    auto lro = getLimitedRunouts(100);
+    auto lro = getLimitedRunouts(50);
 
-    auto handsOOP = range.range_to_list(MatrixOOP);
-    auto handsIP = range.range_to_list(MatrixIp);
+    auto _handsOOP = range.range_to_list(MatrixOOP);
+    auto _handsIP = range.range_to_list(MatrixIp);
+    auto handsOOP = vector<Hand>(_handsOOP.begin(), _handsOOP.begin() + HandsToKeepFromRange);
+    auto handsIP = vector<Hand>(_handsIP.begin(), _handsIP.begin() + HandsToKeepFromRange);
+
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine e(seed);
+    /*
     std::shuffle(std::begin(handsOOP), std::end(handsOOP), e);
     std::shuffle(std::begin(handsIP), std::end(handsIP), e);
+    PokerNode root = PokerNode(-1, lro, Pot, EffectiveStack, 0, 0, 0, board, handsOOP[0], handsIP[0], h_RootNode);
+    */
 
     auto cfr = CFR();
+    auto masterMap = MasterMap();
 
     double expectedValue = 0.0;
-
-    PokerNode *root = new PokerNode(-1, lro, Pot, EffectiveStack, 0, 0, 0, board, handsOOP[0], handsIP[0], h_RootNode);
-        // Have to take this outside this with a pre root of something...
 
     for (int i = 0; i<N_ITERATIONS; i++)
     {
@@ -53,7 +74,11 @@ int main()
             cout << "iter : " << i << endl;
         }
 
+        text_log(LOGS_ENABLED, "ITER");
+        
+
         // Generate root node
+        PokerNode root = PokerNode(-1, lro, Pot, EffectiveStack, 0, 0, 0, board, handsOOP[0], handsIP[0], (handsOOP[0].Cards[0] + handsOOP[0].Cards[1] + h_RootNode));
         std::shuffle(std::begin(handsOOP), std::end(handsOOP), e);
         std::shuffle(std::begin(handsIP), std::end(handsIP), e);
 
@@ -81,26 +106,19 @@ int main()
             }
         }
 
-        root->p0Card = validHandOOP;
-        root->p1Card = validHandIP;
+        root.p0Card = validHandOOP;
+        root.p1Card = validHandIP;
+
+        masterMap.add(std::vector<PokerNode>{root});
+
 
         // printf("Check root node\neffecitve size : %d, pot size : %d\n", root->effectiveSize, root->potSize);
 
-        cfr.run(root);
+        cfr.run(root, &masterMap);
 
-        cfr.UpdateTree(root);
+        masterMap.Update();
 
     }
-
-
-
-
-
-
-
-
-
-
 
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<seconds>(stop - start);
@@ -110,40 +128,23 @@ int main()
     int MAX_RESULTS = 100;
     int total_results = 0;
 
-    auto node = root;
-    queue<PokerNode*> queue;
-
-    queue.push(node);
-
     ofstream myFile;
     myFile.open("logs.txt");
 
-    while(queue.size() > 0)
+    for (auto el : masterMap.map)
     {
-        node = queue.front();
-        queue.pop();
+        std::cout << "history : " << el.first << " value : " << endl;
+        for (auto elll : el.second->Strategy)
+        {
+            std::cout << elll;
+        }
 
-        for (auto child : node->children)
-        {
-            queue.push(child);
-        }
-        
-        myFile << "History : " << node->history << endl;
-        for (int i=0; i<node->Strategy.size(); i++)
-        {
-            myFile << "    " << node->Strategy[i] << endl;
-        }
-        
+        std::cout << "\n";
+
+        total_results++;
+
+        if (total_results >= MAX_RESULTS) { break; }
     }
-
-/*
-        total_results ++;
-        if (total_results >= MAX_RESULTS) { break; };
-*/
-    
-
-    cfr.DeleteTree(root);
-    
 
     return 0;
 }

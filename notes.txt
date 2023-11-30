@@ -1,1 +1,19 @@
-investigate close node on golang code to free memoty
+[] investigate close node on golang code to free memoty
+
+[] check if all history is populated
+
+[X] pass cards to history
+
+[] rework limited runouts
+
+[X] return from map when get child and not build it again
+
+[X] cfr update tree to masternode update tree
+
+[] when storing child, pass frequencies !!!
+
+[] json instead of constants please
+
+[] mutexes and multithreadding
+
+[] current history == current player's hand
