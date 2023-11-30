@@ -6,6 +6,7 @@
 #include <array>
 #include <vector>
 #include <unordered_map>
+#include <algorithm>
 
 #include <stdio.h> // DEBUG
 
@@ -14,6 +15,7 @@
 #include "Deck.hpp"
 #include "NodeStrategy.hpp"
 #include "backward.hpp"
+#include "Logs.hpp"
 
 using namespace std;
 
@@ -23,6 +25,7 @@ Deck deckMaker;
 
 long getMemoValue(vector<string> array)
 {
+    text_log(LOGS_ENABLED, "getMemoValue-in");
     auto sorted = array;
     sort(begin(sorted), end(sorted));
     string final = "";
@@ -33,17 +36,20 @@ long getMemoValue(vector<string> array)
 
     if (memoMap.find(final) != memoMap.end())
     {
+        text_log(LOGS_ENABLED, "getMemoValue-out");
         return memoMap[final];
     }
     else 
     {
         memoMap[final] = handsolver.solve(array);
+        text_log(LOGS_ENABLED, "getMemoValue-out");
         return memoMap[final];
     }
 }
 
 vector<vector<string>> getLimitedRunouts(int nbRunouts)
 {
+    text_log(LOGS_ENABLED, "getLimitedRunouts-in");
     vector<vector<string>> runouts;
     while (true)
     {
@@ -65,6 +71,7 @@ vector<vector<string>> getLimitedRunouts(int nbRunouts)
 
         if (runouts.size() == nbRunouts)
         {
+            text_log(LOGS_ENABLED, "getLimitedRunouts-out");
             return runouts;
         }
     }
@@ -95,7 +102,7 @@ PokerNode::PokerNode(
         p1Card(_p1Card),
         history(_history)
 {
-    this->turnIndex = -1;
+    // this->turnIndex = -1;
 };
 
 PokerNode::PokerNode(
@@ -125,7 +132,7 @@ PokerNode::PokerNode(
         history(_history),
         turnIndex(_turnIndex)
 {
-    std::cout << "built with turn index : " << _turnIndex << std::endl;
+    // std::cout << "built with turn index : " << _turnIndex << std::endl;
 };
 
 PokerNode::~PokerNode(){};
@@ -148,6 +155,7 @@ int numChildren(PokerNode *pokerNode, MasterMap* masterMap)
 
 PokerNode getChild(PokerNode *pokerNode, int i, MasterMap* masterMap)
 {
+    text_log(LOGS_ENABLED, "getChild-in");
     // FIX ME: Get from mastermap with cards etc... 
     if (pokerNode->childrenHistory.size() == 0)
     {
@@ -159,6 +167,7 @@ PokerNode getChild(PokerNode *pokerNode, int i, MasterMap* masterMap)
 
     auto val = masterMap->getNode(index);
 
+    text_log(LOGS_ENABLED, "getChild-out");
     return val;
 }
 
@@ -170,11 +179,13 @@ PokerNode PokerNode::getParent()
 
 double getChildProbability(PokerNode *pokerNode, int i, MasterMap *masterMap)
 {
+    text_log(LOGS_ENABLED, "getChildProbability-in");
     if (pokerNode->probabilities.size() == 0)
     {
         buildChildren(pokerNode, masterMap);
     }
 
+    text_log(LOGS_ENABLED, "getChildProbability-out");
     return pokerNode->probabilities[i];
 }
 
@@ -238,6 +249,7 @@ Hand PokerNode::playerCard(int player)
 
 vector<string> getFullBoard(vector<string> currentBoard, array<string, 2> player, array<string, 2>opponent)
 {
+    text_log(LOGS_ENABLED, "getFullBoard-in");
     auto deck = deckMaker.make_deck();
     vector<string> cardsOut;
     for (auto el : player) {
@@ -268,11 +280,13 @@ vector<string> getFullBoard(vector<string> currentBoard, array<string, 2> player
         fullBoard.push_back(availableCards.at(0));
     }
 
+    text_log(LOGS_ENABLED, "getFullBoard-out");
     return fullBoard;
 }
 
 double PokerNode::utility(int player)
 {
+    text_log(LOGS_ENABLED, "PokerNode::utility-in");
     Hand cardPlayer = this->playerCard(player);
     Hand cardOpponent = this->playerCard(1 - player);
 
@@ -294,16 +308,16 @@ double PokerNode::utility(int player)
 			// return -float64(n.PotSize) * opponent or hero card frequency
 			// Also increase pot size on bets ?
         if (this->player == player) {
+            text_log(LOGS_ENABLED, "PokerNode::utility-out");
             return (double)this->potSize;
         } else {
+            text_log(LOGS_ENABLED, "PokerNode::utility-out");
             return -(double)this->potSize;
         }
     }
 
     // Case river showdown
-    if (this->stage == 2) {
-        printf("case river\n");
-        std::cout << this->history << std::endl;
+    if (this->stage == 2) {;
 
         vector<string> playerFinalHand = board;
         playerFinalHand.push_back(cardPlayer.Cards.at(0));
@@ -316,30 +330,25 @@ double PokerNode::utility(int player)
 
         string handhero = "";
         for (auto el : cardPlayer.Cards) { handhero.append(el); }
-        std::cout << "hand of hero : " << handhero << std::endl;
 
         string handvilain = "";
         for (auto el : cardOpponent.Cards) { handvilain.append(el); }
-        std::cout << "hand of vilain : " << handvilain << std::endl;
 
-        printf("solving hero's hand\n");
         long playerHandValue = handsolver.solve(playerFinalHand);
-        printf("solving vilains's hand\n");
         long opponentHandValue = handsolver.solve(opponentFinalhand);
 
-
-
         if (playerHandValue > opponentHandValue) {
+            text_log(LOGS_ENABLED, "PokerNode::utility-out");
             return (double)this->potSize;
         } 
         else if (opponentHandValue > playerHandValue) {
+            text_log(LOGS_ENABLED, "PokerNode::utility-out");
             return - (double)this->potSize;
         } else {
+            text_log(LOGS_ENABLED, "PokerNode::utility-out");
             return 0.0;
         }
     }
-
-    printf("case turn\n");
 
 
     // Case flop and turn showdown
@@ -373,7 +382,7 @@ double PokerNode::utility(int player)
 
     averagePlayerWinnings = cumulativePlayerWinnings / (double)AllInSamplesize;
 
-
+    text_log(LOGS_ENABLED, "PokerNode::utility-out");
     return averagePlayerWinnings;
 }
 
@@ -406,6 +415,7 @@ void PokerNode::instanciate()
 // OOOH MYYYYY GAAAAAAD
 std::vector<PokerNode> buildChildren(PokerNode* pokerNode, MasterMap* masterMap)
 {
+    text_log(LOGS_ENABLED, "buildChildren-in");
     if (pokerNode->isTerminal()) {
         std::cout << "SHOULD NEVER BE HERE" << std::endl;
         return std::vector<PokerNode> {};
@@ -450,10 +460,11 @@ std::vector<PokerNode> buildChildren(PokerNode* pokerNode, MasterMap* masterMap)
             return std::vector<PokerNode> {}; 
         }
     }
-
+    text_log(LOGS_ENABLED, "buildChildren-out");
 }
 
 std::vector<PokerNode> buildRootDeals(PokerNode* pokerNode, MasterMap* masterMap) {
+    text_log(LOGS_ENABLED, "buildRootDeals-in");
     auto currPlayer = pokerNode->getPlayer();
     std::string nextHistory = pokerNode->computeCardHistory(currPlayer, (pokerNode->history + h_P0Deal));
     PokerNode child = PokerNode(
@@ -482,10 +493,12 @@ std::vector<PokerNode> buildRootDeals(PokerNode* pokerNode, MasterMap* masterMap
 
     masterMap->add(std::vector<PokerNode>{child});
 
+    text_log(LOGS_ENABLED, "buildRootDeals-out");
     return vector<PokerNode>{child};
 }
 
 std::vector<PokerNode> buildP0Deal(PokerNode* pokerNode, MasterMap* masterMap) {
+    text_log(LOGS_ENABLED, "buildP0Deal-in");
     auto currPlayer = pokerNode->getPlayer();
     std::string nextHistory = pokerNode->computeCardHistory(currPlayer, (pokerNode->history + h_P0Deal));
     PokerNode child = PokerNode(
@@ -515,11 +528,12 @@ std::vector<PokerNode> buildP0Deal(PokerNode* pokerNode, MasterMap* masterMap) {
 
     masterMap->add(std::vector<PokerNode>{child});
 
+    text_log(LOGS_ENABLED, "buildP0Deal-out");
     return vector<PokerNode>{child};
-
 }
 
 std::vector<PokerNode> buildP1Deal(PokerNode* pokerNode, MasterMap* masterMap) {
+    text_log(LOGS_ENABLED, "buildP1Deal-in");
     auto currPlayer = pokerNode->getPlayer();
     std::string nextHistory = pokerNode->computeCardHistory(currPlayer, (pokerNode->history + h_P1Deal));
     PokerNode child = PokerNode(
@@ -549,11 +563,12 @@ std::vector<PokerNode> buildP1Deal(PokerNode* pokerNode, MasterMap* masterMap) {
 
     masterMap->add(std::vector<PokerNode>{child});
 
+    text_log(LOGS_ENABLED, "buildP1Deal-out");
     return vector<PokerNode>{child};
 }
 
 std::vector<PokerNode> buildOpenAction(PokerNode* pokerNode, MasterMap* masterMap) {
-
+    text_log(LOGS_ENABLED, "buildOpenAction-in");
     vector<string> choices = { h_Check };
     vector<double> bets = { 0.0 };
 
@@ -650,10 +665,12 @@ std::vector<PokerNode> buildOpenAction(PokerNode* pokerNode, MasterMap* masterMa
 
     masterMap->add(vectorToReturn);
 
+    text_log(LOGS_ENABLED, "buildOpenAction-out");
     return vectorToReturn;
 }
 
 std::vector<PokerNode> buildCBAction(PokerNode* pokerNode, MasterMap* masterMap) {
+    text_log(LOGS_ENABLED, "buildCBAction-in");
 
     vector<string> choices = { h_CheckBack };
     vector<double> bets = { 0.0 };
@@ -752,6 +769,7 @@ std::vector<PokerNode> buildCBAction(PokerNode* pokerNode, MasterMap* masterMap)
 
     masterMap->add(vectorToReturn);
 
+    text_log(LOGS_ENABLED, "buildCBAction-out");
     return vectorToReturn;
 }
 
@@ -768,6 +786,7 @@ bool isOverThreasholdRaise(const PokerNode *parent, double choice)
 
 std::vector<PokerNode> buildCFRAction(PokerNode *pokerNode, MasterMap* masterMap, bool isRaise)
 {
+    text_log(LOGS_ENABLED, "buildCFRAction-in");
     vector<string> choices = { h_Fold, h_Call };
     vector<double> bets = { 0.0, 0.0 };
 
@@ -1004,6 +1023,7 @@ std::vector<PokerNode> buildCFRAction(PokerNode *pokerNode, MasterMap* masterMap
     
     masterMap->add(vectorToReturn);
 
+    text_log(LOGS_ENABLED, "buildCFRAction-out");
     return vectorToReturn;
 }
 
@@ -1094,6 +1114,7 @@ std::vector<PokerNode> buildChanceNode(PokerNode *pokerNode, MasterMap* masterMa
 // In this version we ignore limited run outs and give back one node only
 std::vector<PokerNode> buildChanceNode(PokerNode *pokerNode, MasterMap* masterMap)
 {
+    text_log(LOGS_ENABLED, "buildChanceNode-in");
     vector<string> validCards;
     int player;
 
@@ -1102,64 +1123,89 @@ std::vector<PokerNode> buildChanceNode(PokerNode *pokerNode, MasterMap* masterMa
     } else {
         player = 0;
     }
-    
-    bool hasTurnIndex = false;
-    vector<int> turnIndexes;
 
-    if (pokerNode->stage == 0) {
-        for (int index = 0; index<pokerNode->limitedRunouts.size(); index ++)
+    text_log(LOGS_ENABLED, "buildChanceNode-check event before huh");
+
+    // ---------------------------
+
+    Deck deckMaker;
+
+    auto deck = deckMaker.make_deck();
+
+    std::vector<std::string> forbiddenCards;
+
+    for (int i=0; i<2; i++)
+    {
+        forbiddenCards.push_back(pokerNode->p0Card.Cards[i]);
+        forbiddenCards.push_back(pokerNode->p1Card.Cards[i]);
+    }
+
+    for (auto el : board)
+    {
+        forbiddenCards.push_back(el);
+    }
+
+    string cardToPush;
+
+    for (auto card : deck)
+    {
+        if (std::find(forbiddenCards.begin(), forbiddenCards.end(), card) != forbiddenCards.end())
         {
-            auto card = pokerNode->limitedRunouts[index][0];
-            if (find(pokerNode->board.begin(), pokerNode->board.end(), card) == pokerNode->board.end()) {
-                validCards.push_back(card);
-                turnIndexes.push_back(index);
-                hasTurnIndex = true;
-            }
+            continue;
         }
-    } else if (pokerNode->stage == 1) {
-        auto card = pokerNode->limitedRunouts[pokerNode->turnIndex][1];
-        validCards.push_back(card);
+        else
+        {
+            cardToPush = card;
+            break;
+        }
     }
 
     vector<PokerNode> vectorToReturn;
+    text_log(LOGS_ENABLED, "buildChanceNode-1");
 
 
-    for (int index = 0; index<validCards.size(); index++)
+    int newNodeStage;
+    if (pokerNode->stage == 0) { newNodeStage = 1; }
+    else if (pokerNode->stage == 1) { newNodeStage = 2; }
+
+    auto board = pokerNode->board;
+    board.push_back(cardToPush);
+    auto currPlayer = pokerNode->getPlayer();
+    std::string nextHistory = pokerNode->computeCardHistory(currPlayer, (pokerNode->history + "*" + cardToPush + "*" + h_Chance));   
+
+    // If the history already exists, return it
+    if (masterMap->map.contains(nextHistory))
     {
-        int newNodeStage;
-        if (pokerNode->stage == 0) { newNodeStage = 1; }
-        else if (pokerNode->stage == 1) { newNodeStage = 2; }
-
-        int finalTurnIndex = -1;
-        if (hasTurnIndex == true) { finalTurnIndex = turnIndexes[index]; }
-
-        auto board = pokerNode->board;
-        board.push_back(validCards[index]);
-        auto currPlayer = pokerNode->getPlayer();
-        std::string nextHistory = pokerNode->computeCardHistory(currPlayer, (pokerNode->history + "*" + validCards[index] + "*" + h_Chance));   
-        std::cout << "adding mystery card : " << validCards[index] << " has turn index : " << hasTurnIndex << std::endl; 
-        std::cout << "turn index : " << pokerNode->turnIndex << std::endl;
-
-        PokerNode child =PokerNode(
-            pokerNode->player, 
-            pokerNode->limitedRunouts,
-            pokerNode->potSize,
-            pokerNode->effectiveSize,
-            pokerNode->currentFacingBet, 
-            pokerNode->raiseLevel,
-            newNodeStage,
-            board, 
-            pokerNode->p0Card,
-            pokerNode->p1Card,
-            nextHistory
-        );
-        // child.parent = this;
-        child.turnIndex = finalTurnIndex;
-
-        // pokerNode->children.push_back(child);
-        pokerNode->childrenHistory.push_back(nextHistory);
-        vectorToReturn.push_back(child);
+        auto node = masterMap->getNode(nextHistory);
+        vectorToReturn.push_back(node);
+        return vectorToReturn;
     }
+
+
+    text_log(LOGS_ENABLED, "buildChanceNode-2");
+
+
+    PokerNode child = PokerNode(
+        pokerNode->player, 
+        pokerNode->limitedRunouts,
+        pokerNode->potSize,
+        pokerNode->effectiveSize,
+        pokerNode->currentFacingBet, 
+        pokerNode->raiseLevel,
+        newNodeStage,
+        board, 
+        pokerNode->p0Card,
+        pokerNode->p1Card,
+        nextHistory
+    );
+    // child.parent = this;
+
+    // pokerNode->children.push_back(child);
+    pokerNode->childrenHistory.push_back(nextHistory);
+    vectorToReturn.push_back(child);
+    
+
+    text_log(LOGS_ENABLED, "buildChanceNode-3");
 
 
 
@@ -1171,6 +1217,7 @@ std::vector<PokerNode> buildChanceNode(PokerNode *pokerNode, MasterMap* masterMa
 
     masterMap->add(vectorToReturn);
 
+    text_log(LOGS_ENABLED, "buildChanceNode-out");
     return vectorToReturn;
 
 
@@ -1178,6 +1225,7 @@ std::vector<PokerNode> buildChanceNode(PokerNode *pokerNode, MasterMap* masterMa
 
 std::string PokerNode::computeCardHistory(int currentPlayer, std::string history)
 {
+    text_log(LOGS_ENABLED, "computeCardHistory-in");
     std::string returnVal = history;
     std::string nextCards;
     if (currentPlayer == 1)
@@ -1200,6 +1248,7 @@ std::string PokerNode::computeCardHistory(int currentPlayer, std::string history
         returnVal[i] = nextCards[i];
     }
 
+    text_log(LOGS_ENABLED, "computeCardHistory-out");
     return returnVal;
 }
 
@@ -1218,6 +1267,7 @@ MasterMap::~MasterMap()
 
 void MasterMap::add(std::vector<PokerNode> children)
 {
+    text_log(LOGS_ENABLED, "MasterMap::add-in");
     for (auto child : children)
     {
         // int currentPlayer = child.getPlayer();
@@ -1236,8 +1286,17 @@ void MasterMap::add(std::vector<PokerNode> children)
             child.history,
             child.turnIndex
         );
+
+        heapNode->ReachPr = child.ReachPr;
+        heapNode->ReachPrSum = child.ReachPrSum;
+        heapNode->RegretSum = child.RegretSum;
+        heapNode->Strategy = child.Strategy;
+        heapNode->StrategySum = child.StrategySum;
+        heapNode->probabilities = child.probabilities;
+
         this->map[child.history] = heapNode;
     };
+    text_log(LOGS_ENABLED, "MasterMap::add-out");
 }
 
 PokerNode MasterMap::getNode(std::string str)
@@ -1245,7 +1304,7 @@ PokerNode MasterMap::getNode(std::string str)
 
     // FIX ME: frequencies !!!
     auto val = this->map[str];
-    return PokerNode(
+    auto node = PokerNode(
             val->player, 
             val->limitedRunouts,
             val->potSize,
@@ -1257,11 +1316,22 @@ PokerNode MasterMap::getNode(std::string str)
             val->p0Card,
             val->p1Card,
             val->history
-        );
+    );
+
+    node.ReachPr = val->ReachPr;
+    node.ReachPrSum = val->ReachPrSum;
+    node.RegretSum = val->RegretSum;
+    node.Strategy = val->Strategy;
+    node.StrategySum = val->StrategySum;
+    node.probabilities = val->probabilities;
+
+    return node;
 }
 
 void MasterMap::Update()
 {
+    text_log(LOGS_ENABLED, "MasterMap::Update()-in");
+
     for (auto kv : this->map)
     {
         auto node = kv.second;
@@ -1297,4 +1367,6 @@ void MasterMap::Update()
 
         node->ReachPr = 0.0;
     }
+
+    text_log(LOGS_ENABLED, "MasterMap::Update()-out");
 }

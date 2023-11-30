@@ -10,6 +10,7 @@
 #include "Poker.hpp"
 #include "Hand.hpp"
 #include "Utils.hpp"
+#include "Logs.hpp"
 
 #include "backward.hpp"
 
@@ -24,11 +25,13 @@ CFR::~CFR()
 
 double CFR::run(PokerNode node, MasterMap *masterMap)
 {
+    text_log(LOGS_ENABLED, "CFR::run");
     return this->runHelper(node, node.getPlayer(), 1.0, 1.0, 1.0, masterMap);
 }
 
 double CFR::runHelper(PokerNode node, int lastPlayer, double reachP0, double reachP1, double reachChance, MasterMap *masterMap)
 {
+    text_log(LOGS_ENABLED, "CFR::runHelper-in");
     double ev;
     switch (node.type()) {
         case 't':
@@ -46,7 +49,7 @@ double CFR::runHelper(PokerNode node, int lastPlayer, double reachP0, double rea
             ev = sgn * this->handlePlayerNode(node, lastPlayer, reachP0, reachP1, reachChance, masterMap);
             break;
     }
-
+    text_log(LOGS_ENABLED, "CFR::runHelper-out");
     return ev;
 }
 
@@ -87,6 +90,7 @@ double CFR::handlePlayerNode(PokerNode node, int lastPlayer, double reachP0, dou
     if (nbChildren == 0) {
         std::cout << "WOOOOOOOO" << std::endl;
         // FIX ME LOL
+        
     }
 
     for (int i = 0; i<nbChildren; i++)

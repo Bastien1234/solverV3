@@ -21,7 +21,7 @@ const double Threashold = 0.6;
 const int AllInSamplesize = 50;
 const int MaxChanceNodes = 1500;
 
-static const vector<string> board = {"Ah", "7d", "5h"};
+static vector<string> board = {"Ah", "7d", "5h"};
 
 // Strategies
 const vector<double> OOPFlopBets = {0.4};

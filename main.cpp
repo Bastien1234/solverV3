@@ -11,6 +11,7 @@
 #include "Poker.hpp"
 #include "Range.hpp"
 #include "Cfr.hpp"
+#include "Logs.hpp"
 
 #include "Test.hpp"
 
@@ -72,6 +73,9 @@ int main(int argc, char** argv)
         if (i % 10 == 0) {
             cout << "iter : " << i << endl;
         }
+
+        text_log(LOGS_ENABLED, "ITER");
+        
 
         // Generate root node
         PokerNode root = PokerNode(-1, lro, Pot, EffectiveStack, 0, 0, 0, board, handsOOP[0], handsIP[0], (handsOOP[0].Cards[0] + handsOOP[0].Cards[1] + h_RootNode));

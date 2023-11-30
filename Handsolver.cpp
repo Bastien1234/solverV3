@@ -16,11 +16,9 @@ Handsolver::~Handsolver()
 
 long Handsolver::solve(std::vector<std::string> arr)
 {
-    printf("Entering solve function\n");
 
     std::string curhand = "";
     for (auto e : arr) { curhand.append(e); }
-    std::cout << "current hand = " << curhand << std::endl;
     // Declare state as bits
     unsigned short int stateStraight = 0;
     unsigned short int stateHearts = 0;
@@ -42,7 +40,6 @@ long Handsolver::solve(std::vector<std::string> arr)
     int colorsCount[] = { 0, 0, 0, 0 };
     int valuesCount[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-    printf("Check point 1\n");
 
     for (auto element : arr)
     {
@@ -128,7 +125,6 @@ long Handsolver::solve(std::vector<std::string> arr)
         }
     }
 
-    printf("Check point 2\n");
 
 
     for (int i=0; i<14; i++)
@@ -206,7 +202,6 @@ long Handsolver::solve(std::vector<std::string> arr)
 		}
     }
 
-    printf("Check point 3\n");
 
 
 
@@ -291,7 +286,6 @@ long Handsolver::solve(std::vector<std::string> arr)
 	   Check is possible full house
 	*/
 
-    printf("Check point 4\n");
 
 
 	if (threeOfAKind > 0 && bestPair > 0)
@@ -380,7 +374,6 @@ long Handsolver::solve(std::vector<std::string> arr)
         return returnValue;
     }
 
-    printf("Check point 5\n");
 
 
     /*
@@ -430,7 +423,6 @@ long Handsolver::solve(std::vector<std::string> arr)
         Two paris
     */
 
-    printf("Check point 6\n");
 
 
    if (secondPair > 0)
@@ -485,7 +477,6 @@ long Handsolver::solve(std::vector<std::string> arr)
 		Good enough to call though !!!
 	*/
 
-    printf("Check point 7\n");
 
 
 	vector<int> values;
@@ -503,7 +494,6 @@ long Handsolver::solve(std::vector<std::string> arr)
 		}
 	}
 
-    printf("Check point 8\n");
 
 
 	long multiplier = 1e9;
@@ -514,7 +504,6 @@ long Handsolver::solve(std::vector<std::string> arr)
 		multiplier /= 100;
 	}
 
-    printf("Exiting solve function\n");
 
 	return returnValue;
 }
